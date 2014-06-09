@@ -1,0 +1,41 @@
+*{
+	margin: 0px ;
+	padding: 0px ;
+}
+#wrapper{
+	color: white;
+	text-align: center;
+	margin:	0px auto;
+	padding: 0px auto;
+	width: 1024px;
+}
+body{
+	background-color: #1E90FF;
+}
+.form-control{
+	width: 60%;
+	display: inline;
+	margin: 0px auto;
+}
+
+#search_formContainer{
+	margin-top: 50px;
+}
+
+#result_formContainer{
+	margin-top: 10px;
+}
+#topSearch{
+	position: fixed;
+	top: 0px;
+	left: 10px;
+	width: 80%;
+	display: block;
+	background-color:#1E90FF;
+
+}
+#results{
+	margin-top: 70px;
+	height: 100%;
+	background-color: white;
+}

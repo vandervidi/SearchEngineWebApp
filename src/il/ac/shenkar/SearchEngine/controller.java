@@ -21,9 +21,14 @@ public class controller extends HttpServlet {
 		String str = request.getPathInfo();
 		System.out.println(str);
 			if (str.equals("/search")){
-
+				
+				String searchQuery = request.getParameter("searchQuery");
+				System.out.println(searchQuery);
+				
+				//if
+				
 				 RequestDispatcher dispatcher = getServletContext()
-							.getRequestDispatcher("/views/index.jsp");
+							.getRequestDispatcher("/views/searchResults.jsp");
 				 dispatcher.forward(request, response);	
 			}
 			else{
