@@ -2,6 +2,9 @@
 	margin: 0px ;
 	padding: 0px ;
 }
+html{
+	height: 100%;
+}
 #wrapper{
 	color: white;
 	text-align: center;
@@ -10,7 +13,7 @@
 	width: 1024px;
 }
 body{
-	background-color: #1E90FF;
+	height: 100%;
 }
 .form-control{
 	width: 60%;
@@ -26,16 +29,22 @@ body{
 	margin-top: 10px;
 }
 #topSearch{
+	z-index:1;
 	position: fixed;
 	top: 0px;
-	left: 10px;
-	width: 80%;
+	left: 0px;
+	padding-left: 20px;
+	padding-bottom: 25px;
+	width: 100%;
 	display: block;
 	background-color:#1E90FF;
 
 }
-#results{
-	margin-top: 70px;
+#resultsContainer{
+	display:block;
+	position: absolute;
+	margin-top: 75px;
 	height: 100%;
+	width: 100%;
 	background-color: white;
 }

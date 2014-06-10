@@ -18,8 +18,8 @@
 			</form>
 		</section>
 		</nav>
-		<section id="results">
-		result
+		<section id="resultsContainer">
+		results 
 		</section>
 	</div>
 </body>
