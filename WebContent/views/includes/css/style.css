@@ -14,6 +14,7 @@ html{
 }
 body{
 	height: 100%;
+	background-color: #FAA458;
 }
 .form-control{
 	width: 60%;
@@ -37,7 +38,7 @@ body{
 	padding-bottom: 25px;
 	width: 100%;
 	display: block;
-	background-color:#1E90FF;
+	background-color:#FAA458;
 
 }
 #resultsContainer{

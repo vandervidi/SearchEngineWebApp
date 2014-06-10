@@ -25,7 +25,7 @@ public class FolderScanner implements Runnable{
 	@Override
 	public void run() {
 		while (true){
-			File folder = new File(System.getProperty("user.dir")+"\\db");
+			File folder = new File("C:\\Users\\joe\\workspaceEE\\SearchEngineWebApp\\db");
 			File[] listOfFiles = folder.listFiles();
 
 			for (File file : listOfFiles) {

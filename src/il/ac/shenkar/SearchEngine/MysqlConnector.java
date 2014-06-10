@@ -2,8 +2,11 @@ package il.ac.shenkar.SearchEngine;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /* This class is responsible for:
  * 1.Initializing a connection to the MySQL server
@@ -19,17 +22,18 @@ public class MysqlConnector {
 	
 	private MysqlConnector() {
 		try {
+			System.out.println("MysqlConnector CTOR()");
 			//initializing connection to the database
 			Class.forName("com.mysql.jdbc.Driver");
 			
 			//Vidrans connection
-			connection = DriverManager.getConnection(
-					"jdbc:mysql://localhost/searchengine", "root", "");
+//			connection = DriverManager.getConnection(
+//					"jdbc:mysql://localhost/searchengine", "root", "");
 			
-			/* Ofirs connection
+			// Ofirs connection
 			connection = DriverManager.getConnection(
 					"jdbc:mysql://localhost/searchengine", "jaja", "gaga");
-			*/
+			
 			
 			//creating the 'index file' table
 			initTable();
@@ -134,4 +138,34 @@ public class MysqlConnector {
         System.out.println("close-statement");
 		System.out.println("Removing completed");
 	}
+	
+	public List<RowElement> searchWord(String q) throws SQLException{
+		List <RowElement> rows = new ArrayList<>();
+		statement = connection.createStatement();
+		
+		String query =
+		        "SELECT word, docNumber, freq " +
+		        "FROM indexFile WHERE word ='"+q+"' ORDER BY freq ASC;";
+
+		    try {
+		       
+		        ResultSet rs = statement.executeQuery(query);
+		        while (rs.next()) {
+		            String resultWord = rs.getString("word");
+		            int resultDocNum = rs.getInt("docNumber");
+		            int resultFreq = rs.getInt("freq");
+		            
+		            rows.add(new RowElement(resultWord, resultDocNum, resultFreq));
+		            System.out.println(resultWord + "\t" + resultDocNum +
+		                               "\t" + resultFreq);
+		        }
+		    } catch (SQLException e ) {
+		    	e.printStackTrace();
+		    }
+		
+		
+		
+		return rows;
+	}
+	
 }
