@@ -50,38 +50,38 @@ public class RowElement {
 		this.freq = freq;
 	}
 
-	public StringBuilder getPreview(int docNumber) {
-		System.out.println("getPreview");
-		StringBuilder preview= new StringBuilder();
-		List<PostingFileElement> pf = FolderScanner.getInstance().postingFile;
-		for (PostingFileElement element : pf) {
-			if (element.getM_docNum() == docNumber) {
-
-				BufferedReader br = null;
-				 
-				try {
-		 
-					String sCurrentLine;
-		 
-					br = new BufferedReader(new FileReader(element.getM_path()));
-					int counter=0;
-					while ((sCurrentLine = br.readLine()) != null && counter<2) {	
-						counter++;
-						preview.append(sCurrentLine);
-					}
-		 
-				} catch (IOException e) {
-					e.printStackTrace();
-				} finally {
-					try {
-						if (br != null)br.close();
-					} catch (IOException ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-		}
-
-	return preview;
-	}
+//	public StringBuilder getPreview(int docNumber) {
+//		System.out.println("getPreview");
+//		StringBuilder preview= new StringBuilder();
+//		List<PostingFileElement> pf = FolderScanner.getInstance().postingFile;
+//		for (PostingFileElement element : pf) {
+//			if (element.getM_docNum() == docNumber) {
+//
+//				BufferedReader br = null;
+//				 
+//				try {
+//		 
+//					String sCurrentLine;
+//		 
+//					br = new BufferedReader(new FileReader(element.getM_path()));
+//					int counter=0;
+//					while ((sCurrentLine = br.readLine()) != null && counter<2) {	
+//						counter++;
+//						preview.append(sCurrentLine);
+//					}
+//		 
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				} finally {
+//					try {
+//						if (br != null)br.close();
+//					} catch (IOException ex) {
+//						ex.printStackTrace();
+//					}
+//				}
+//			}
+//		}
+//
+//	return preview;
+//	}
 }

@@ -15,13 +15,12 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/controller/*")
 public class controller extends HttpServlet {
 	
-	public FolderScanner fs;
+	public MysqlConnector ms;
 	private static final long serialVersionUID = 1L;
     public controller() {
         super();
         System.out.println("folderScanner CTOR()");
-        fs = FolderScanner.getInstance();
-		fs.run();
+        ms = MysqlConnector.getInstance();
     }
 
     
@@ -34,22 +33,24 @@ public class controller extends HttpServlet {
 				String searchQuery = request.getParameter("searchQuery");
 				System.out.println(searchQuery);
 				
-				/*try {
-					List<RowElement> rows = msqlc.searchWord(searchQuery);
+				try {
+					List<RowElement> rows = ms.searchWord(searchQuery);
 					
-					Iterator i = rows.iterator();
+					Iterator<RowElement> i = rows.iterator();
+					
 					while (i.hasNext()){
-						StringBuilder filePreview = ((RowElement)i).getPreview(   ((RowElement)i).getDocNumber()  );
-						System.out.println(filePreview);
-						
+						//System.out.println( i.toString() );
+						//System.out.println("1");
+						String filePath = ms.getFilePath_by_docNumber_postingFile( ((RowElement)i).getDocNumber() );
+						//System.out.println(s);
+//						StringBuilder filePreview = ((RowElement)i).getPreview(   ((RowElement)i).getDocNumber()  );
+//						System.out.println(filePreview);
 					}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
-				//if
-*/				
+
 				 RequestDispatcher dispatcher = getServletContext()
 							.getRequestDispatcher("/views/searchResults.jsp");
 				 dispatcher.forward(request, response);	
@@ -58,7 +59,7 @@ public class controller extends HttpServlet {
 	            RequestDispatcher dispatcher = getServletContext()
 	            .getRequestDispatcher("/views/index.jsp");
 	            dispatcher.forward(request, response);        
-			    }
+			}
 	}
 
 }
