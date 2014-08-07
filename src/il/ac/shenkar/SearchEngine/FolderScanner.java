@@ -28,63 +28,23 @@ public class FolderScanner implements Runnable{
 		
 		while (true){
 			File[] listOfFiles = folder.listFiles();
-
-			for (File file : listOfFiles) {
-			    if (file.isFile()) {
-			    	try {
-						
-		    		ms.insert_to_postingFile_if_doesnt_exists(file.getPath());
-		    		
-		    		
-		    		// check if all path's are still valid
-//					for (int i=0; i<ms.checkNumRows_postingFile(); i++){
-//						File f = new File(ms.getFilePath_by_docNumber_postingFile(i));
-//						// if not valid -> Remove file from list
-//						if (!f.exists()){
-//							
-//							//remove all words from DB that Attributed to this path file (by file number)
-//							int docNum_toRemove = i;
-//							try {
-//								ms.removeFileWords(docNum_toRemove);
-//							} catch (SQLException e) {
-//								// TODO Auto-generated catch block
-//								e.printStackTrace();
-//							}
-//							
-//							//remove the file path from the posting file
-//							System.out.println("Step 2/2 - removed - "+ms.getFilePath_by_docNumber_postingFile(i)+" from the posting file ,in index: "+i);
-//							ms.removeDocRow_by_number_postingFile(i);
-//						}			    		
-//						}
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-			    }
-			}
-			
-			
-			ms.check_if_a_file_exists();
-			
-			if (listOfFiles.length==0) {
-			// Clear DB table
-				try {
-					Statement statement = ms.connection.createStatement();
-					statement.executeUpdate("TRUNCATE TABLE indexFile;");
-					statement.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			try {
+				for (File file : listOfFiles) {
+				    if (file.isFile()) {
+				    	ms.insert_file_to_db_if_doesnt_exists(file.getPath());	
+				    }
 				}
-			// Clear Posting file
-				try {
-					Statement statement = ms.connection.createStatement();
-					statement.executeUpdate("TRUNCATE TABLE postingFile;");
-					statement.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			
+			
+				ms.check_if_all_file_exists_by_posting_table_paths();
+				
+				if (listOfFiles.length==0) {
+					// Clear DB tables
+					ms.clear_db_tables();
 				}
+			} catch (SQLException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			
 			try {
