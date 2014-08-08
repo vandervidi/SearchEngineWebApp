@@ -33,23 +33,7 @@ public class controller extends HttpServlet {
 				String searchQuery = request.getParameter("searchQuery");
 				System.out.println(searchQuery);
 				
-				try {
-					List<RowElement> rows = ms.searchWord(searchQuery);
-					
-					Iterator<RowElement> i = rows.iterator();
-					
-					while (i.hasNext()){
-						//System.out.println( i.toString() );
-						//System.out.println("1");
-						String filePath = ms.getFilePath_by_docNumber_postingFile( ((RowElement)i).getDocNumber() );
-						//System.out.println(s);
-//						StringBuilder filePreview = ((RowElement)i).getPreview(   ((RowElement)i).getDocNumber()  );
-//						System.out.println(filePreview);
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				
 
 				 RequestDispatcher dispatcher = getServletContext()
 							.getRequestDispatcher("/views/searchResults.jsp");

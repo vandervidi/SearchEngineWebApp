@@ -175,36 +175,35 @@ public class MysqlConnector {
 		statement = connection.createStatement();
 		statement.executeUpdate("DELETE FROM indexFile "
 				+ "		WHERE docNumber =" + docNum + ";");
-		System.out.println("step 1/2 - removed all words from the database table ");
+		System.out.println("\nStep 1/2 - removed file from the posting file ,in index: "+docNum);
 		statement.close();
-		System.out.println("Removing completed");
 	}
 
-	public List<RowElement> searchWord(String q) throws SQLException {
-		List<RowElement> rows = new ArrayList<>();
-		statement = connection.createStatement();
-
-		String query = "SELECT word, docNumber, freq "
-				+ "FROM indexFile WHERE word ='" + q + "' ORDER BY freq ASC;";
-
-		try {
-
-			ResultSet rs = statement.executeQuery(query);
-			while (rs.next()) {
-				String resultWord = rs.getString("word");
-				int resultDocNum = rs.getInt("docNumber");
-				int resultFreq = rs.getInt("freq");
-
-				rows.add(new RowElement(resultWord, resultDocNum, resultFreq));
-				System.out.println(resultWord + "\t" + resultDocNum + "\t"
-						+ resultFreq);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return rows;
-	}
+//	public List<RowElement> searchWord(String q) throws SQLException {
+//		List<RowElement> rows = new ArrayList<>();
+//		statement = connection.createStatement();
+//
+//		String query = "SELECT word, docNumber, freq "
+//				+ "FROM indexFile WHERE word ='" + q + "' ORDER BY freq ASC;";
+//
+//		try {
+//
+//			ResultSet rs = statement.executeQuery(query);
+//			while (rs.next()) {
+//				String resultWord = rs.getString("word");
+//				int resultDocNum = rs.getInt("docNumber");
+//				int resultFreq = rs.getInt("freq");
+//
+//				rows.add(new RowElement(resultWord, resultDocNum, resultFreq));
+//				System.out.println(resultWord + "\t" + resultDocNum + "\t"
+//						+ resultFreq);
+//			}
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return rows;
+//	}
 
 	public int checkNumRows_postingFile() throws SQLException {
 		int counter = 0;
@@ -246,8 +245,7 @@ public class MysqlConnector {
 		statement = connection.createStatement();
 		statement.executeUpdate("DELETE FROM postingFile "
 				+ "		WHERE docNumber =" + docNum + ";");
-		System.out
-				.println("step 1/2 - remove the row from DB that have this docNumber ");
+		System.out.println("step 2/2 - remove the row from DB that have this docNumber ");
 		statement.close();
 		System.out.println("Removing completed");
 	}
@@ -301,7 +299,7 @@ public class MysqlConnector {
 	 */
 	public void parseFile_and_add_to_index_file_table(String path, int docNum)
 			throws IOException, SQLException {
-		String everything = null;
+		String everything = null;  // The complete text from the file
 		String words[];
 		File file = new File(path);
 		BufferedReader br = new BufferedReader(new FileReader(file.getPath()));
@@ -313,6 +311,7 @@ public class MysqlConnector {
 			sb.append(System.lineSeparator());
 			line = br.readLine();
 		}
+		br.close();
 		everything = sb.toString();
 
 		// Removing special characters from the text
@@ -337,6 +336,7 @@ public class MysqlConnector {
 		// Removing duplicates from the index file
 		removeDuplicate();
 		//System.out.println("build index for: " + path + "completed.");
+		
 	}
 
 	/*
@@ -344,26 +344,31 @@ public class MysqlConnector {
 	 * If not, clear it from the posting file and its words from the index file
 	 */
 	public void check_if_all_file_exists_by_posting_table_paths() throws SQLException {
-		// check if all path's are still valid
-//		for (int i=0; i<checkNumRows_postingFile(); i++){
-//			File f = new File(getFilePath_by_docNumber_postingFile(i));
-//			// if not valid -> Remove file from list
-//			if (!f.exists()){
-//		
-//			//remove all words from DB that Attributed to this path file (by filenumber)
-//			int docNum_toRemove = i;
-//			try {
-//				removeFileWords(docNum_toRemove);
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
-//				
-//			//remove the file path from the posting file
-//			System.out.println("Step 2/2 - removed - "+getFilePath_by_docNumber_postingFile(i)+" from the posting file ,in index: "+i);
-//			removeDocRow_by_number_postingFile(i);
-//			}
-//		 }
-
+		
+		/* check if all path's are still valid */
+		// Get all rows from postingFile table
+		statement = connection.createStatement();
+		String query = "SELECT * FROM `postingFile`";
+		ResultSet rs = statement.executeQuery(query);
+		
+		List<Integer> docNumbersToDelete = new ArrayList<Integer>();
+		while (rs.next()){
+			
+			File f = new File(  rs.getString("docPath")  );
+			// if not valid -> Remove file from list
+			if (!f.exists()){
+				// Save all document numbers of paths that are not valid
+				docNumbersToDelete.add( rs.getInt("docNumber") );
+			}
+		}
+		statement.close();
+		for (int i=0 ; i<docNumbersToDelete.size(); i++){
+			//remove all words from DB that Attributed to this path file (by filenumber)
+			removeFileWords(docNumbersToDelete.get(i));
+			
+			//remove the file path from the posting file
+			removeDocRow_by_number_postingFile(docNumbersToDelete.get(i));
+		}
 	}
 
 	public void clear_db_tables() throws SQLException {
