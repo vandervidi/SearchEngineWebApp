@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /* This class is responsible for:
@@ -40,7 +41,7 @@ public class MysqlConnector {
 					"jdbc:mysql://localhost/searchengine", "jaja", "gaga");
 
 			// creating the 'index file' table
-			initTable();
+			//initTable();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -61,7 +62,8 @@ public class MysqlConnector {
 		String createIndexTable = "CREATE TABLE indexFile ("
 				+ "        word VARCHAR(30) NOT NULL, "
 				+ "        docNumber INT(4) NOT NULL, "
-				+ "        freq INT(4) NOT NULL " + "        )";
+				+ "        freq INT(4) DEFAULT 0, "
+				+ "		   hits INT(4) DEFAULT 0 )";
 
 		try {
 			statement = connection.createStatement();
@@ -138,7 +140,6 @@ public class MysqlConnector {
 	// This function is executed when we want to sort the 'index file' database
 	// table by the 'word' column
 	public void sortByWord() throws SQLException {
-
 		statement = connection.createStatement();
 		statement.execute("ALTER TABLE `indexFile` ORDER BY word ASC;");
 		statement.close();
@@ -153,7 +154,7 @@ public class MysqlConnector {
 		// Creating a temporary table that will store a table without duplicate
 		// rows.
 		statement.executeUpdate("CREATE temporary TABLE tsum AS"
-				+ "		SELECT word, docNumber, SUM(freq) as freq "
+				+ "		SELECT word, docNumber, SUM(freq) as freq , hits "
 				+ "		FROM indexfile group by word, docNumber;");
 		// Clearing completely the 'index File' table
 		statement.executeUpdate("TRUNCATE TABLE indexFile;");
@@ -161,8 +162,9 @@ public class MysqlConnector {
 		// Inserting into the empty 'index file' table all rows from the
 		// temporary table
 		statement
-				.executeUpdate("INSERT INTO indexFile (`word`,`docNumber`,`freq`)"
-						+ "		SELECT word,docNumber,freq" + "		FROM tsum;");
+				.executeUpdate("INSERT INTO indexFile (`word`,`docNumber`,`freq`, `hits`)"
+						+ "		SELECT word,docNumber,freq,hits "
+						+ "		FROM tsum;");
 
 		// Deleting the temporary table we used
 		statement.executeUpdate("DROP TEMPORARY TABLE IF EXISTS tsum;");
@@ -228,7 +230,8 @@ public class MysqlConnector {
 	public String getFilePath_by_docNumber_postingFile(int docNum)
 			throws SQLException {
 		statement = connection.createStatement();
-		String query = "SELECT docPath " + "		FROM postingFile "
+		String query = "SELECT docPath"
+				+ "		FROM postingFile "
 				+ "		WHERE docNumber ='" + docNum + "'";
 		try {
 			ResultSet rs = statement.executeQuery(query);
@@ -281,8 +284,7 @@ public class MysqlConnector {
 			throws SQLException {
 		path = path.replace("\\", "\\\\");
 		statement = connection.createStatement();
-		String query = "SELECT * FROM `postingFile`  " + "		WHERE `docPath` ='"
-				+ path + "';";
+		String query = "SELECT * FROM `postingFile` WHERE `docPath` ='"	+ path + "';";
 		ResultSet rs = statement.executeQuery(query);
 
 		int docNumber = -1;
@@ -315,8 +317,8 @@ public class MysqlConnector {
 		everything = sb.toString();
 
 		// Removing special characters from the text
-		everything = everything.replaceAll(
-				"[!@#$%^&*\\[\\]\"()-=_+~:;<>?,.{}`|/]", "");
+		everything = everything.replaceAll("(?<!\\d)\\.|\\.+$|[^a-zA-Z0-9. ]", " ");
+		//everything = everything.replaceAll("(?<=\\d)\\.(?!\\d)|(?<!\\d)\\.|[^a-zA-Z0-9. ]", " ");
 		everything = everything.replaceAll("\r", "");
 		everything = everything.replaceAll("\n", " ");
 		words = everything.split(" ");
@@ -329,14 +331,6 @@ public class MysqlConnector {
 				insert_indexFile(tmpWord, docNum, 1);
 			}
 		}
-
-		// Sorting the index file by an alfabetic order
-		sortByWord();
-
-		// Removing duplicates from the index file
-		removeDuplicate();
-		//System.out.println("build index for: " + path + "completed.");
-		
 	}
 
 	/*
@@ -386,5 +380,74 @@ public class MysqlConnector {
 		Statement statement = connection.createStatement();
 		statement.executeUpdate("TRUNCATE TABLE postingFile;");
 		statement.close();
+	}
+
+	public Iterator getResult(String searchQuery) throws SQLException, IOException {
+		List<Integer> docNumList = new ArrayList<Integer>();
+		List<FileDescriptor> fileDesList = new ArrayList<FileDescriptor>();
+		
+		String selectSQL = "SELECT * FROM indexfile WHERE word=?";
+		PreparedStatement prepstate = connection.prepareStatement (selectSQL);
+        prepstate.setString(1, searchQuery);
+        ResultSet rs = prepstate.executeQuery();
+
+		while (rs.next()) {
+			docNumList.add(rs.getInt("docNumber"));	
+		}
+		prepstate.close();
+		
+		for(int i=0; i<docNumList.size(); i++){
+			selectSQL = "SELECT * FROM postingFile WHERE docNumber=?";
+			prepstate = connection.prepareStatement (selectSQL);
+	        prepstate.setInt(1, docNumList.get(i));
+	        rs = prepstate.executeQuery();
+			
+			while (rs.next()) {
+				// Read file
+				File f = new File(rs.getString("docPath"));
+				BufferedReader br = new BufferedReader(new FileReader(f.getPath()));
+				//StringBuilder sb = new StringBuilder();
+				String line = br.readLine();
+
+				int counter =0;
+				FileDescriptor fileDes = new FileDescriptor();
+				while (line != null) {
+					// if line number is #0 | #1 | #2 - remove '#' from line variable 
+					/* (0) - Title
+					 * (1) - Creation Date
+					 * (2) - Author
+					 * (3) - Preview
+					 * (4) - Content
+					 */
+					switch (counter) {
+					case 0: line = line.substring(1);
+							fileDes.setTitle(line);
+						break;
+					case 1: line = line.substring(1);
+							fileDes.setCreationDate(line);
+						break;
+					case 2: line = line.substring(1);
+							fileDes.setAuthor(line);
+						break;
+					case 3: line = line.substring(1);
+							fileDes.setPreview(line);
+						break;
+					default:
+						fileDes.appendContent(line);
+						//fileDes.getContent().append(System.lineSeparator());
+						break;
+					}
+					counter++;
+					line = br.readLine();
+				}
+				br.close();
+				
+				fileDesList.add(fileDes);
+				
+				System.out.println(fileDes.toString());
+				System.out.println("Content: "+fileDes.getContent().toString());
+			}
+		}
+		return fileDesList.iterator();
 	}
 }

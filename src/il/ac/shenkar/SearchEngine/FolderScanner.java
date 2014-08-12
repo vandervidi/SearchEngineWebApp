@@ -35,6 +35,11 @@ public class FolderScanner implements Runnable{
 				    }
 				}
 			
+				// Sorting the index file by an alfabetic order
+				ms.sortByWord();
+
+				// Removing duplicates from the index file
+				ms.removeDuplicate();
 			
 				ms.check_if_all_file_exists_by_posting_table_paths();
 				
@@ -42,14 +47,9 @@ public class FolderScanner implements Runnable{
 					// Clear DB tables
 					ms.clear_db_tables();
 				}
-			} catch (SQLException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			try {
+				
 				Thread.sleep(3000);
-			} catch (InterruptedException e) {
+			} catch (InterruptedException | SQLException | IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

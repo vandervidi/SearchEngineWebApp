@@ -19,7 +19,6 @@ public class controller extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     public controller() {
         super();
-        System.out.println("folderScanner CTOR()");
         ms = MysqlConnector.getInstance();
     }
 
@@ -33,11 +32,23 @@ public class controller extends HttpServlet {
 				String searchQuery = request.getParameter("searchQuery");
 				System.out.println(searchQuery);
 				
-				
-
-				 RequestDispatcher dispatcher = getServletContext()
+				try {
+					// Check "hi" hi AND bye
+ 					
+					
+					Iterator result = ms.getResult(searchQuery);
+					
+					request.setAttribute("result", result);
+					RequestDispatcher dispatcher = getServletContext()
 							.getRequestDispatcher("/views/searchResults.jsp");
-				 dispatcher.forward(request, response);	
+					dispatcher.forward(request, response);	
+					
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				
 			}
 			else{
 	            RequestDispatcher dispatcher = getServletContext()
