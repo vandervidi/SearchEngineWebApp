@@ -17,10 +17,15 @@ public class FolderScanner implements Runnable{
 	private FolderScanner() {
 		super();
 		ms = MysqlConnector.getInstance();
+		
+		// creating 'postingFile' 'indexFile' tables
+		try {
+			ms.initTables();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-
-	//initializing Posting File structure
-	//List <PostingFileElement> postingFile = new ArrayList<>();
 
 	@Override
 	public void run() {
@@ -31,7 +36,7 @@ public class FolderScanner implements Runnable{
 			try {
 				for (File file : listOfFiles) {
 				    if (file.isFile()) {
-				    	ms.insert_file_to_db_if_doesnt_exists(file.getPath());	
+				    	ms.insert_file_to_db_if_doesnt_exists_or_deleted_before(file.getPath());	
 				    }
 				}
 			
@@ -45,12 +50,11 @@ public class FolderScanner implements Runnable{
 				
 				if (listOfFiles.length==0) {
 					// Clear DB tables
-					ms.clear_db_tables();
+					//ms.clear_db_tables();
 				}
 				
 				Thread.sleep(3000);
 			} catch (InterruptedException | SQLException | IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

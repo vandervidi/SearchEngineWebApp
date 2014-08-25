@@ -24,12 +24,12 @@
 			
 			<article id="resultsContainer">
 				<%
-					Iterator result = (Iterator)request.getAttribute("result");
+					Iterator result = (Iterator)request.getAttribute("result"); 
 					while (result.hasNext()){
 						FileDescriptor fileItem = (FileDescriptor)result.next();
 						
 						//make bold text
-						StringBuilder bold = fileItem.getContent();
+						//StringBuilder bold = fileItem.getContent();
 						
 						out.println("<article class='container'>	"
 									+"	<section> Title: "+ fileItem.getTitle() +"</section>"  

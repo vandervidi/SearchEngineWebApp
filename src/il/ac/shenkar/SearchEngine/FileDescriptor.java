@@ -5,11 +5,12 @@ public class FileDescriptor {
 	private String creationDate;
 	private String author;
 	private String preview;
-	private StringBuilder content;
+	private String path;
+//	private StringBuilder content;
 	
-	public FileDescriptor() {
-		content = new StringBuilder();
-	}
+//	public FileDescriptor() {
+//		content = new StringBuilder();
+//	}
 
 	@Override
 	public String toString() {
@@ -51,16 +52,26 @@ public class FileDescriptor {
 		this.preview = preview;
 	}
 
-	public StringBuilder getContent() {
-		return content;
+	public String getPath() {
+		return path;
 	}
 
-	public void setContent(StringBuilder content) {
-		this.content = content;
+	public void setPath(String path) {
+		this.path = path;
 	}
-	public void appendContent (String content){
-		this.content.append(content);
-	}
+
+	
+	
+//	public StringBuilder getContent() {
+//		return content;
+//	}
+
+//	public void setContent(StringBuilder content) {
+//		this.content = content;
+//	}
+//	public void appendContent (String content){
+//		this.content.append(content);
+//	}
 	
 	
 	

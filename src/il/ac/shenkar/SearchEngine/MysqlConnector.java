@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,9 +40,6 @@ public class MysqlConnector {
 			// Ofirs connection
 			connection = DriverManager.getConnection(
 					"jdbc:mysql://localhost/searchengine", "jaja", "gaga");
-
-			// creating the 'index file' table
-			//initTable();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -52,13 +50,28 @@ public class MysqlConnector {
 		return INSTANCE;
 	}
 
-	public void initTable() {
+	public void initTables() throws SQLException {
 		createTable_postingFile();
 		createTable_indexFile();
+		// check tables if exist
+		// statement = connection.createStatement();
+		// String query = "SELECT 1 FROM postingFile LIMIT 1";
+		// ResultSet rs = statement.executeQuery(query);
+		//
+		// rs.last();
+		// int equalNumRows = rs.getRow();
+		// statement.close();
+		// // If the path does not exist in the PostingFile table, add it.
+		// if (equalNumRows == 0) {
+		// createTable_postingFile();
+		// createTable_indexFile();
+		//
+		// //System.out.println("\nCreate seccessfully the tables.");
+		// }
 	}
 
 	// This function creates,if doesnt exits, a new 'index File' table
-	public void createTable_indexFile() {
+	public void createTable_indexFile() throws SQLException {
 		String createIndexTable = "CREATE TABLE indexFile ("
 				+ "        word VARCHAR(30) NOT NULL, "
 				+ "        docNumber INT(4) NOT NULL, "
@@ -70,45 +83,67 @@ public class MysqlConnector {
 			statement.executeUpdate(createIndexTable);
 			statement.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			try {
-				// Clear the table that already exists
-				statement.executeUpdate("TRUNCATE TABLE indexFile;");
-				System.out
-						.println("This table already exist! Clearing the existing one...");
-				statement.close();
+			// e.printStackTrace();
+			// check table if exist
+			statement = connection.createStatement();
+			String query = "SELECT 1 FROM postingFile LIMIT 1";
+			ResultSet rs = statement.executeQuery(query);
 
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			rs.last();
+			int equalNumRows = rs.getRow();
+			statement.close();
+
+			if (equalNumRows == 1) {
+				System.out.println("\nindexFile table already exist!");
 			}
 		}
 	}
 
 	// This function creates,if doesnt exits, a new 'index File' table
-	public void createTable_postingFile() {
+	public void createTable_postingFile() throws SQLException {
 		String createPostingFileTable = "CREATE TABLE postingFile ("
 				+ "        docPath VARCHAR(300) NOT NULL, "
-				+ "        docNumber INT(4) KEY AUTO_INCREMENT    )";
+				+ "        docNumber INT(4) KEY AUTO_INCREMENT,"
+				+ "		   deleted INT(1) DEFAULT 0    )";
 
 		try {
 			statement = connection.createStatement();
 			statement.executeUpdate(createPostingFileTable);
 			statement.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			try {
-				// Clear the table that already exists
-				statement.executeUpdate("TRUNCATE TABLE postingFile;");
-				System.out
-						.println("This table already exist! Clearing the existing one...");
-				statement.close();
+			statement = connection.createStatement();
+			String query = "SELECT 1 FROM postingFile LIMIT 1";
+			ResultSet rs = statement.executeQuery(query);
 
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			rs.last();
+			int equalNumRows = rs.getRow();
+			statement.close();
+
+			if (equalNumRows == 1) {
+				System.out.println("\npostingFile table already exist!");
 			}
 		}
+	}
+
+	public void clear_tables() throws SQLException {
+		clear_table_indexFile();
+		clear_table_postingFile();
+	}
+
+	public void clear_table_indexFile() throws SQLException {
+		// Clear the table that already exists
+		statement.executeUpdate("TRUNCATE TABLE indexFile;");
+		System.out
+				.println("This table already exist! Clearing the existing one...");
+		statement.close();
+	}
+
+	public void clear_table_postingFile() throws SQLException {
+		// Clear the table that already exists
+		statement.executeUpdate("TRUNCATE TABLE postingFile;");
+		System.out
+				.println("This table already exist! Clearing the existing one...");
+		statement.close();
 	}
 
 	// This function inserts a new row into the 'index File' table
@@ -120,7 +155,7 @@ public class MysqlConnector {
 		prepstate.execute();
 		prepstate.close();
 
-		//System.out.println("Add " + path + " to posting file completly.");
+		// System.out.println("Add " + path + " to posting file completly.");
 	}
 
 	// This function inserts a new row into the 'index File' table
@@ -163,8 +198,7 @@ public class MysqlConnector {
 		// temporary table
 		statement
 				.executeUpdate("INSERT INTO indexFile (`word`,`docNumber`,`freq`, `hits`)"
-						+ "		SELECT word,docNumber,freq,hits "
-						+ "		FROM tsum;");
+						+ "		SELECT word,docNumber,freq,hits " + "		FROM tsum;");
 
 		// Deleting the temporary table we used
 		statement.executeUpdate("DROP TEMPORARY TABLE IF EXISTS tsum;");
@@ -177,35 +211,37 @@ public class MysqlConnector {
 		statement = connection.createStatement();
 		statement.executeUpdate("DELETE FROM indexFile "
 				+ "		WHERE docNumber =" + docNum + ";");
-		System.out.println("\nStep 1/2 - removed file from the posting file ,in index: "+docNum);
+		System.out
+				.println("\nStep 1/2 - removed file from the posting file ,in index: "
+						+ docNum);
 		statement.close();
 	}
 
-//	public List<RowElement> searchWord(String q) throws SQLException {
-//		List<RowElement> rows = new ArrayList<>();
-//		statement = connection.createStatement();
-//
-//		String query = "SELECT word, docNumber, freq "
-//				+ "FROM indexFile WHERE word ='" + q + "' ORDER BY freq ASC;";
-//
-//		try {
-//
-//			ResultSet rs = statement.executeQuery(query);
-//			while (rs.next()) {
-//				String resultWord = rs.getString("word");
-//				int resultDocNum = rs.getInt("docNumber");
-//				int resultFreq = rs.getInt("freq");
-//
-//				rows.add(new RowElement(resultWord, resultDocNum, resultFreq));
-//				System.out.println(resultWord + "\t" + resultDocNum + "\t"
-//						+ resultFreq);
-//			}
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return rows;
-//	}
+	// public List<RowElement> searchWord(String q) throws SQLException {
+	// List<RowElement> rows = new ArrayList<>();
+	// statement = connection.createStatement();
+	//
+	// String query = "SELECT word, docNumber, freq "
+	// + "FROM indexFile WHERE word ='" + q + "' ORDER BY freq ASC;";
+	//
+	// try {
+	//
+	// ResultSet rs = statement.executeQuery(query);
+	// while (rs.next()) {
+	// String resultWord = rs.getString("word");
+	// int resultDocNum = rs.getInt("docNumber");
+	// int resultFreq = rs.getInt("freq");
+	//
+	// rows.add(new RowElement(resultWord, resultDocNum, resultFreq));
+	// System.out.println(resultWord + "\t" + resultDocNum + "\t"
+	// + resultFreq);
+	// }
+	// } catch (SQLException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// return rows;
+	// }
 
 	public int checkNumRows_postingFile() throws SQLException {
 		int counter = 0;
@@ -221,45 +257,47 @@ public class MysqlConnector {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			/* currently table currently doesnt have any lines */
-			System.out.println("Posting file table currently doesnt have any files");
+			System.out
+					.println("Posting file table currently doesnt have any files");
 		}
 		return 0;
 	}
 
 	// check if work
-	public String getFilePath_by_docNumber_postingFile(int docNum)
-			throws SQLException {
-		statement = connection.createStatement();
-		String query = "SELECT docPath"
-				+ "		FROM postingFile "
-				+ "		WHERE docNumber ='" + docNum + "'";
-		try {
-			ResultSet rs = statement.executeQuery(query);
-			return rs.getString(1);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+	// public String getFilePath_by_docNumber_postingFile(int docNum)
+	// throws SQLException {
+	// statement = connection.createStatement();
+	// String query = "SELECT docPath"
+	// + "		FROM postingFile "
+	// + "		WHERE docNumber ='" + docNum + "'";
+	// try {
+	// ResultSet rs = statement.executeQuery(query);
+	// return rs.getString(1);
+	// } catch (SQLException e) {
+	// e.printStackTrace();
+	// }
+	// return null;
+	// }
 
 	// remove the row from DB that have this docNumber
-	public void removeDocRow_by_number_postingFile(int docNum)
+	public void deleteDocRow_by_number_postingFile(int docNum)
 			throws SQLException {
 		statement = connection.createStatement();
-		statement.executeUpdate("DELETE FROM postingFile "
-				+ "		WHERE docNumber =" + docNum + ";");
-		System.out.println("step 2/2 - remove the row from DB that have this docNumber ");
+		int check = statement.executeUpdate("UPDATE postingFile "
+				+ "		SET deleted=1 " + "		WHERE docNumber =" + docNum + ";");
+		System.out
+				.println("step 2/2 - logical delete the row from DB that have this docNumber ");
 		statement.close();
 		System.out.println("Removing completed");
 	}
 
-	public void insert_file_to_db_if_doesnt_exists(String path)
+	public void insert_file_to_db_if_doesnt_exists_or_deleted_before(String path)
 			throws SQLException, IOException {
 		// Fix path (ex. c:\\abc\\file...)
 		String pathFix = path.replace("\\", "\\\\");
 		// check if a path already exists in the table
 		statement = connection.createStatement();
-		String query = "SELECT docPath " + "		FROM postingFile "
+		String query = "SELECT docPath FROM postingFile "
 				+ "		WHERE docPath ='" + pathFix + "'";
 		ResultSet rs = statement.executeQuery(query);
 
@@ -275,8 +313,32 @@ public class MysqlConnector {
 
 			// insert to indexFile table
 			parseFile_and_add_to_index_file_table(path, docNum);
-			
-			System.out.println("\nAdd completely - "+path);
+
+			System.out.println("\nAdd completely - " + path);
+		} else {
+			statement = connection.createStatement();
+			query = "SELECT docPath,docNumber	FROM postingFile "
+					+ "		WHERE docPath ='" + pathFix + "' AND deleted=1";
+			rs = statement.executeQuery(query);
+			rs.last();
+			equalNumRows = rs.getRow();
+
+			// if there are rows that equals to a path that was deleted in the
+			// past.
+			if (equalNumRows != 0) {
+				int docNumber = rs.getInt("docNumber");
+
+				// Change deleted column to 0
+				int check = statement.executeUpdate("UPDATE postingFile "
+						+ "		SET deleted=0 " + "		WHERE docPath ='" + pathFix
+						+ "';");
+
+				statement.close();
+
+				// insert to indexFile table
+				parseFile_and_add_to_index_file_table(path, docNumber);
+
+			}
 		}
 	}
 
@@ -284,7 +346,8 @@ public class MysqlConnector {
 			throws SQLException {
 		path = path.replace("\\", "\\\\");
 		statement = connection.createStatement();
-		String query = "SELECT * FROM `postingFile` WHERE `docPath` ='"	+ path + "';";
+		String query = "SELECT * FROM `postingFile` WHERE `docPath` ='" + path
+				+ "';";
 		ResultSet rs = statement.executeQuery(query);
 
 		int docNumber = -1;
@@ -301,7 +364,7 @@ public class MysqlConnector {
 	 */
 	public void parseFile_and_add_to_index_file_table(String path, int docNum)
 			throws IOException, SQLException {
-		String everything = null;  // The complete text from the file
+		String everything = null; // The complete text from the file
 		String words[];
 		File file = new File(path);
 		BufferedReader br = new BufferedReader(new FileReader(file.getPath()));
@@ -317,8 +380,11 @@ public class MysqlConnector {
 		everything = sb.toString();
 
 		// Removing special characters from the text
-		everything = everything.replaceAll("(?<!\\d)\\.|\\.+$|[^a-zA-Z0-9. ]", " ");
-		//everything = everything.replaceAll("(?<=\\d)\\.(?!\\d)|(?<!\\d)\\.|[^a-zA-Z0-9. ]", " ");
+		everything = everything.replaceAll("(?<!\\d)\\.|\\.+$|[^a-zA-Z0-9. ]",
+				" ");
+		// everything =
+		// everything.replaceAll("(?<=\\d)\\.(?!\\d)|(?<!\\d)\\.|[^a-zA-Z0-9. ]",
+		// " ");
 		everything = everything.replaceAll("\r", "");
 		everything = everything.replaceAll("\n", " ");
 		words = everything.split(" ");
@@ -337,31 +403,34 @@ public class MysqlConnector {
 	 * This function checks if the paths from the Posting File table are valid.
 	 * If not, clear it from the posting file and its words from the index file
 	 */
-	public void check_if_all_file_exists_by_posting_table_paths() throws SQLException {
-		
+	public void check_if_all_file_exists_by_posting_table_paths()
+			throws SQLException {
+
 		/* check if all path's are still valid */
 		// Get all rows from postingFile table
 		statement = connection.createStatement();
-		String query = "SELECT * FROM `postingFile`";
+		String query = "SELECT * FROM `postingFile` WHERE deleted=0";
 		ResultSet rs = statement.executeQuery(query);
-		
+
 		List<Integer> docNumbersToDelete = new ArrayList<Integer>();
-		while (rs.next()){
-			
-			File f = new File(  rs.getString("docPath")  );
+		while (rs.next()) {
+
+			File f = new File(rs.getString("docPath"));
 			// if not valid -> Remove file from list
-			if (!f.exists()){
+			if (!f.exists()) {
+
 				// Save all document numbers of paths that are not valid
-				docNumbersToDelete.add( rs.getInt("docNumber") );
+				docNumbersToDelete.add(rs.getInt("docNumber"));
 			}
 		}
 		statement.close();
-		for (int i=0 ; i<docNumbersToDelete.size(); i++){
-			//remove all words from DB that Attributed to this path file (by filenumber)
+		for (int i = 0; i < docNumbersToDelete.size(); i++) {
+			// remove all words from DB that Attributed to this path file (by
+			// filenumber)
 			removeFileWords(docNumbersToDelete.get(i));
-			
-			//remove the file path from the posting file
-			removeDocRow_by_number_postingFile(docNumbersToDelete.get(i));
+
+			// remove the file path from the posting file
+			deleteDocRow_by_number_postingFile(docNumbersToDelete.get(i));
 		}
 	}
 
@@ -382,72 +451,180 @@ public class MysqlConnector {
 		statement.close();
 	}
 
-	public Iterator getResult(String searchQuery) throws SQLException, IOException {
-		List<Integer> docNumList = new ArrayList<Integer>();
-		List<FileDescriptor> fileDesList = new ArrayList<FileDescriptor>();
-		
-		String selectSQL = "SELECT * FROM indexfile WHERE word=?";
-		PreparedStatement prepstate = connection.prepareStatement (selectSQL);
-        prepstate.setString(1, searchQuery);
-        ResultSet rs = prepstate.executeQuery();
+	public List<String> analyzeQuery(String searchQuery) throws SQLException,
+			IOException {
+		// Split by OR operator
+		List<String> splitByOR = new ArrayList<String>(Arrays.asList(searchQuery.split("OR")));
 
-		while (rs.next()) {
-			docNumList.add(rs.getInt("docNumber"));	
+		// Run on every element of splitByOR list and remove AND word
+		// and get array of words.
+		//List<String[]> splitBy_Or_And = new ArrayList<String[]>();
+		for (String query : splitByOR) {
+			query = query.replace(" AND ", " ");
+			query.trim();
+			//splitBy_Or_And.add(Arrays.asList());
 		}
-		prepstate.close();
-		
-		for(int i=0; i<docNumList.size(); i++){
-			selectSQL = "SELECT * FROM postingFile WHERE docNumber=?";
-			prepstate = connection.prepareStatement (selectSQL);
-	        prepstate.setInt(1, docNumList.get(i));
-	        rs = prepstate.executeQuery();
-			
-			while (rs.next()) {
-				// Read file
-				File f = new File(rs.getString("docPath"));
-				BufferedReader br = new BufferedReader(new FileReader(f.getPath()));
-				//StringBuilder sb = new StringBuilder();
-				String line = br.readLine();
 
-				int counter =0;
-				FileDescriptor fileDes = new FileDescriptor();
-				while (line != null) {
-					// if line number is #0 | #1 | #2 - remove '#' from line variable 
-					/* (0) - Title
-					 * (1) - Creation Date
-					 * (2) - Author
-					 * (3) - Preview
-					 * (4) - Content
-					 */
-					switch (counter) {
-					case 0: line = line.substring(1);
-							fileDes.setTitle(line);
-						break;
-					case 1: line = line.substring(1);
-							fileDes.setCreationDate(line);
-						break;
-					case 2: line = line.substring(1);
-							fileDes.setAuthor(line);
-						break;
-					case 3: line = line.substring(1);
-							fileDes.setPreview(line);
-						break;
-					default:
-						fileDes.appendContent(line);
-						//fileDes.getContent().append(System.lineSeparator());
-						break;
+		return splitByOR;
+	}
+
+	public List<Integer> getDocNumResults(List<String[]> splitedQueryList)
+			throws SQLException {
+		List<Integer> resultDocNumbers = new ArrayList<Integer>();
+		List<Integer> docNumbers_ToRemove = new ArrayList<Integer>();
+		List<Integer> docNumbers_ToRemoveFRom = new ArrayList<Integer>();
+		for (String[] str : splitedQueryList) {
+
+			/*
+			 * str can be:
+			 * 
+			 * [victory , dog NOT big duck] 2,3 cat 4 hot , blue dog 5 pig NOT
+			 * loop gorj
+			 */
+
+			for (String words : str) {
+				// If words contains a substring "NOT"
+				if (words.contains("NOT")) {
+					// list - dog, big duck
+					// remove 'NOT' and split
+					// string(0) , string(1)
+					List<String> not_Parts = new ArrayList<String>(
+							Arrays.asList(words.split(" NOT ")));
+
+					// take string(0) split by space " "
+					List<String> tmp = new ArrayList<String>(
+							Arrays.asList(not_Parts.get(0).split(" ")));
+					// Get docNum by words
+					docNumbers_ToRemoveFRom = getDocNumList(tmp);
+
+					// take string(1) split by space " "
+					tmp = new ArrayList<String>(Arrays.asList(not_Parts.get(1).split(" ")));
+					// Get docNum by words
+					docNumbers_ToRemove = getDocNumList(tmp);
+
+					for (int num : docNumbers_ToRemove) {
+						int index_to_remove = docNumbers_ToRemoveFRom.indexOf(num);
+						if (index_to_remove != -1) {
+							docNumbers_ToRemoveFRom.remove(index_to_remove);
+						}
 					}
-					counter++;
-					line = br.readLine();
+					
+					// Add numbers to main list of ducument numbers
+					for (int num : docNumbers_ToRemoveFRom) {
+						if (resultDocNumbers.indexOf(num) == -1) {
+							docNumbers_ToRemoveFRom.add(num);
+						}
+					}
+					
+//					// list - big, duck
+//					List<String> part_without_spaces = new ArrayList<String>(
+//							Arrays.asList(part.split(" ")));
+//					docNumbers_ToRemove = getDocNumList(part_without_spaces);
+
+					// query without NOT
+				} else {
+					List<String> tmp = new ArrayList<String>(Arrays.asList(words.split(" ")));
 				}
-				br.close();
-				
-				fileDesList.add(fileDes);
-				
-				System.out.println(fileDes.toString());
-				System.out.println("Content: "+fileDes.getContent().toString());
 			}
 		}
-		return fileDesList.iterator();
+
+		// for (int doc : resultDocNumbers){
+		// System.out.println(doc);
+		// }
+		return resultDocNumbers;
 	}
+
+	public List<Integer> getDocNumList(List<String> stringList)
+			throws SQLException {
+		List<Integer> DocumentNumbers = new ArrayList<Integer>();
+		StringBuilder words = new StringBuilder();
+		// example of the string we are trying to create:
+		// 'blue','pen','green','key'
+		for (String w : stringList) {
+			words.append("'" + w + "',");
+		}
+		// Remove the last ","
+		words = words.deleteCharAt(words.length() - 1);
+
+		int numberOfWords = stringList.size();
+
+		statement = connection.createStatement();
+		String query = "SELECT docNumber  FROM indexFile "
+				+ "		WHERE word IN (" + words + ")" + "		GROUP BY docNumber"
+				+ "		HAVING COUNT(DISTINCT word) = " + numberOfWords;
+		ResultSet rs = statement.executeQuery(query);
+		while (rs.next()) {
+			DocumentNumbers.add(rs.getInt("docNumber"));
+		}
+		return DocumentNumbers;
+	}
+
+	// public List<FileDescriptor> getResult(String searchQuery) throws
+	// SQLException, IOException {
+	//
+	//
+	// List<Integer> docNumList = new ArrayList<Integer>();
+	// List<FileDescriptor> fileDesList = new ArrayList<FileDescriptor>();
+	//
+	// String selectSQL = "SELECT * FROM indexfile WHERE word=?";
+	// PreparedStatement prepstate = connection.prepareStatement (selectSQL);
+	// prepstate.setString(1, searchQuery);
+	// ResultSet rs = prepstate.executeQuery();
+	//
+	// while (rs.next()) {
+	// docNumList.add(rs.getInt("docNumber"));
+	// }
+	// prepstate.close();
+	//
+	// for(int i=0; i<docNumList.size(); i++){
+	// selectSQL = "SELECT * FROM postingFile WHERE docNumber=?";
+	// prepstate = connection.prepareStatement (selectSQL);
+	// prepstate.setInt(1, docNumList.get(i));
+	// rs = prepstate.executeQuery();
+	//
+	// while (rs.next()) {
+	// // Read file
+	// File f = new File(rs.getString("docPath"));
+	// BufferedReader br = new BufferedReader(new FileReader(f.getPath()));
+	// //StringBuilder sb = new StringBuilder();
+	// String line = br.readLine();
+	//
+	// int counter =0;
+	// FileDescriptor fileDes = new FileDescriptor();
+	// while (line != null) {
+	// // if line number is #0 | #1 | #2 - remove '#' from line variable
+	// /*(0) - Title
+	// /* (1) - Creation Date
+	// /* (2) - Author
+	// /* (3) - Preview
+	// /* (4) - Content */
+	//
+	// switch (counter) {
+	// case 0: line = line.substring(1);
+	// fileDes.setTitle(line);
+	// break;
+	// case 1: line = line.substring(1);
+	// fileDes.setCreationDate(line);
+	// break;
+	// case 2: line = line.substring(1);
+	// fileDes.setAuthor(line);
+	// break;
+	// case 3: line = line.substring(1);
+	// fileDes.setPreview(line);
+	// break;
+	// }
+	// counter++;
+	// line = br.readLine();
+	// if (counter==4) break;
+	// }
+	// br.close();
+	//
+	// fileDesList.add(fileDes);
+	//
+	// //System.out.println(fileDes.toString());
+	// //System.out.println("Content: "+fileDes.getContent().toString());
+	// }
+	// }
+	// return fileDesList;
+	// }
 }
