@@ -48,10 +48,10 @@ public class FolderScanner implements Runnable{
 			
 				ms.check_if_all_file_exists_by_posting_table_paths();
 				
-				if (listOfFiles.length==0) {
+				//if (listOfFiles.length==0) {
 					// Clear DB tables
 					//ms.clear_db_tables();
-				}
+				//}
 				
 				Thread.sleep(3000);
 			} catch (InterruptedException | SQLException | IOException e) {

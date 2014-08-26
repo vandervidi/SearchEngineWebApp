@@ -33,12 +33,13 @@ public class controller extends HttpServlet {
 				System.out.println(searchQuery);
 				
 				try {
-					List<String[]> splitedQueryList = ms.analyzeQuery(searchQuery);
+					List<String> splitedQueryList = ms.analyzeQuery(searchQuery);
 				
 					List<Integer> docNumbers_of_results = ms.getDocNumResults(splitedQueryList);
 					
-					//splitedQueryList.add("f");
-					//request.setAttribute("result", result);
+					Iterator a = ms.create_fileDescriptors_list_by_docNumbers(docNumbers_of_results);
+					
+					request.setAttribute("result", a);
 					RequestDispatcher dispatcher = getServletContext()
 							.getRequestDispatcher("/views/searchResults.jsp");
 					dispatcher.forward(request, response);	

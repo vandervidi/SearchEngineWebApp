@@ -263,22 +263,6 @@ public class MysqlConnector {
 		return 0;
 	}
 
-	// check if work
-	// public String getFilePath_by_docNumber_postingFile(int docNum)
-	// throws SQLException {
-	// statement = connection.createStatement();
-	// String query = "SELECT docPath"
-	// + "		FROM postingFile "
-	// + "		WHERE docNumber ='" + docNum + "'";
-	// try {
-	// ResultSet rs = statement.executeQuery(query);
-	// return rs.getString(1);
-	// } catch (SQLException e) {
-	// e.printStackTrace();
-	// }
-	// return null;
-	// }
-
 	// remove the row from DB that have this docNumber
 	public void deleteDocRow_by_number_postingFile(int docNum)
 			throws SQLException {
@@ -315,6 +299,8 @@ public class MysqlConnector {
 			parseFile_and_add_to_index_file_table(path, docNum);
 
 			System.out.println("\nAdd completely - " + path);
+			
+		//this path was added before
 		} else {
 			statement = connection.createStatement();
 			query = "SELECT docPath,docNumber	FROM postingFile "
@@ -334,7 +320,8 @@ public class MysqlConnector {
 						+ "';");
 
 				statement.close();
-
+				System.out.println("\nThis file that was deleted before - has recovered completely. \n"+path);
+				
 				// insert to indexFile table
 				parseFile_and_add_to_index_file_table(path, docNumber);
 
@@ -451,29 +438,27 @@ public class MysqlConnector {
 		statement.close();
 	}
 
-	public List<String> analyzeQuery(String searchQuery) throws SQLException,
-			IOException {
+	public List<String> analyzeQuery(String searchQuery) throws SQLException,IOException {
 		// Split by OR operator
-		List<String> splitByOR = new ArrayList<String>(Arrays.asList(searchQuery.split("OR")));
+		List<String> splitByOR = new ArrayList<String>(Arrays.asList(searchQuery.split(" OR ")));
 
 		// Run on every element of splitByOR list and remove AND word
 		// and get array of words.
-		//List<String[]> splitBy_Or_And = new ArrayList<String[]>();
-		for (String query : splitByOR) {
-			query = query.replace(" AND ", " ");
-			query.trim();
-			//splitBy_Or_And.add(Arrays.asList());
+		for (int i=0; i<splitByOR.size(); i++) {
+			String query = splitByOR.get(i).replace(" AND ", " ");
+			query = query.trim();
+			splitByOR.set(i, query);
 		}
 
 		return splitByOR;
 	}
 
-	public List<Integer> getDocNumResults(List<String[]> splitedQueryList)
+	public List<Integer> getDocNumResults(List<String> splitedQueryList)
 			throws SQLException {
 		List<Integer> resultDocNumbers = new ArrayList<Integer>();
 		List<Integer> docNumbers_ToRemove = new ArrayList<Integer>();
 		List<Integer> docNumbers_ToRemoveFRom = new ArrayList<Integer>();
-		for (String[] str : splitedQueryList) {
+		for (String words : splitedQueryList) {
 
 			/*
 			 * str can be:
@@ -481,56 +466,53 @@ public class MysqlConnector {
 			 * [victory , dog NOT big duck] 2,3 cat 4 hot , blue dog 5 pig NOT
 			 * loop gorj
 			 */
+			// If words contains a substring "NOT"
+			if (words.contains("NOT")) {
+				// list - dog, big duck
+				// remove 'NOT' and split
+				// string(0) , string(1)
+				List<String> list_of_not_parts = new ArrayList<String>(Arrays.asList(words.split(" NOT ")));
 
-			for (String words : str) {
-				// If words contains a substring "NOT"
-				if (words.contains("NOT")) {
-					// list - dog, big duck
-					// remove 'NOT' and split
-					// string(0) , string(1)
-					List<String> not_Parts = new ArrayList<String>(
-							Arrays.asList(words.split(" NOT ")));
+				// take string(0) split by space " "
+				List<String> tmp = new ArrayList<String>(Arrays.asList(list_of_not_parts.get(0).split(" ")));
+				// Get docNum by words
+				docNumbers_ToRemoveFRom = getDocNumList(tmp);
 
-					// take string(0) split by space " "
-					List<String> tmp = new ArrayList<String>(
-							Arrays.asList(not_Parts.get(0).split(" ")));
-					// Get docNum by words
-					docNumbers_ToRemoveFRom = getDocNumList(tmp);
+				// take string(1) split by space " "
+				tmp = new ArrayList<String>(Arrays.asList(list_of_not_parts.get(1).split(" ")));
+				// Get docNum by words
+				docNumbers_ToRemove = getDocNumList(tmp);
 
-					// take string(1) split by space " "
-					tmp = new ArrayList<String>(Arrays.asList(not_Parts.get(1).split(" ")));
-					// Get docNum by words
-					docNumbers_ToRemove = getDocNumList(tmp);
-
-					for (int num : docNumbers_ToRemove) {
-						int index_to_remove = docNumbers_ToRemoveFRom.indexOf(num);
-						if (index_to_remove != -1) {
-							docNumbers_ToRemoveFRom.remove(index_to_remove);
-						}
+				for (int num : docNumbers_ToRemove) {
+					int index_to_remove = docNumbers_ToRemoveFRom.indexOf(num);
+					if (index_to_remove != -1) {
+						docNumbers_ToRemoveFRom.remove(index_to_remove);
 					}
-					
-					// Add numbers to main list of ducument numbers
-					for (int num : docNumbers_ToRemoveFRom) {
-						if (resultDocNumbers.indexOf(num) == -1) {
-							docNumbers_ToRemoveFRom.add(num);
-						}
+				}
+				
+				// Add numbers to main list of ducument numbers
+				for (int num : docNumbers_ToRemoveFRom) {
+					if (resultDocNumbers.indexOf(num) == -1) {
+						resultDocNumbers.add(num);
 					}
-					
-//					// list - big, duck
-//					List<String> part_without_spaces = new ArrayList<String>(
-//							Arrays.asList(part.split(" ")));
-//					docNumbers_ToRemove = getDocNumList(part_without_spaces);
+				}
 
-					// query without NOT
-				} else {
-					List<String> tmp = new ArrayList<String>(Arrays.asList(words.split(" ")));
+			// search query without NOT
+			} else {
+				
+				List<String> tmp = new ArrayList<String>(Arrays.asList(words.split(" ")));
+				
+				// Get docNum by words
+				List<Integer> docNumbers_to_add_if_need = getDocNumList(tmp);
+				
+				// Add numbers to main list of ducument numbers
+				for (int num : docNumbers_to_add_if_need) {
+					if (resultDocNumbers.indexOf(num) == -1) {
+						resultDocNumbers.add(num);
+					}
 				}
 			}
 		}
-
-		// for (int doc : resultDocNumbers){
-		// System.out.println(doc);
-		// }
 		return resultDocNumbers;
 	}
 
@@ -559,22 +541,64 @@ public class MysqlConnector {
 		return DocumentNumbers;
 	}
 
+	public Iterator create_fileDescriptors_list_by_docNumbers(List<Integer> docNumbers_of_results) throws SQLException, IOException {
+		List <FileDescriptor> fd = new ArrayList<FileDescriptor>();
+		for( int docNum : docNumbers_of_results ){
+			String selectSQL = "SELECT * FROM postingFile WHERE docNumber=?";
+			PreparedStatement prepstate = connection.prepareStatement (selectSQL);
+			prepstate.setInt(1, docNum);
+			ResultSet rs = prepstate.executeQuery();
+			
+			 while (rs.next()) {
+				 // Read file
+				 File f = new File(rs.getString("docPath"));
+				 BufferedReader br = new BufferedReader(new FileReader(f.getPath()));
+				 
+				 //StringBuilder sb = new StringBuilder();
+				 String line = br.readLine();
+				
+				 int counter =0;
+				 FileDescriptor fileDes = new FileDescriptor();
+				 fileDes.setPath(rs.getString("docPath"));
+				 while (line != null) {
+					 // if line number is #0 | #1 | #2 - remove '#' from line variable
+					 /* (0) - Title
+					 /* (1) - Creation Date
+					 /* (2) - Author
+					 /* (3) - Preview 
+					 */
+					
+					 switch (counter) {
+						 case 0: line = line.substring(1);
+						 fileDes.setTitle(line);
+						 break;
+						 case 1: line = line.substring(1);
+						 fileDes.setCreationDate(line);
+						 break;
+						 case 2: line = line.substring(1);
+						 fileDes.setAuthor(line);
+						 break;
+						 case 3: line = line.substring(1);
+						 fileDes.setPreview(line);
+						 break;
+					 }
+					 counter++;
+					 line = br.readLine();
+					 if (counter==4) break;
+				 }
+				 br.close();
+				 fd.add(fileDes);
+			 }
+		}
+		return fd.iterator();
+	}
+
 	// public List<FileDescriptor> getResult(String searchQuery) throws
 	// SQLException, IOException {
 	//
 	//
 	// List<Integer> docNumList = new ArrayList<Integer>();
 	// List<FileDescriptor> fileDesList = new ArrayList<FileDescriptor>();
-	//
-	// String selectSQL = "SELECT * FROM indexfile WHERE word=?";
-	// PreparedStatement prepstate = connection.prepareStatement (selectSQL);
-	// prepstate.setString(1, searchQuery);
-	// ResultSet rs = prepstate.executeQuery();
-	//
-	// while (rs.next()) {
-	// docNumList.add(rs.getInt("docNumber"));
-	// }
-	// prepstate.close();
 	//
 	// for(int i=0; i<docNumList.size(); i++){
 	// selectSQL = "SELECT * FROM postingFile WHERE docNumber=?";

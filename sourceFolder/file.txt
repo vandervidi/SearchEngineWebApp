@@ -1,8 +1,8 @@
-#wtf
+#file1.txt
 #1.1.2014
 #Ofir Aghai
-#stam stam
+#preview of file 1
 
-DocumentONE #@$#@$%#$% DocumentONE superman superman
-as
-as
+push to git
+
+blue pen yellow banana green key

@@ -1,5 +1,6 @@
+#file2.txt
+#5.3.2014
 #Ofir Aghai
-#1.1.2014
-#stam stam
+#preview of file 2
 
 blue pen yellow key 
