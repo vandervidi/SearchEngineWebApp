@@ -36,7 +36,7 @@ public class FolderScanner implements Runnable{
 			try {
 				for (File file : listOfFiles) {
 				    if (file.isFile()) {
-				    	ms.insert_file_to_db_if_doesnt_exists_or_deleted_before(file.getPath());	
+				    	ms.insert_file_to_db_if_doesnt_exists_or_deleted_before(file.getPath(), file.lastModified());	
 				    }
 				}
 			

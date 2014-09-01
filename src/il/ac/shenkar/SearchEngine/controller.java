@@ -27,6 +27,8 @@ public class controller extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String str = request.getPathInfo();
 		System.out.println(str);
+		
+		RequestDispatcher dispatcher;
 			if (str.equals("/search")){
 				
 				String searchQuery = request.getParameter("searchQuery");
@@ -42,9 +44,9 @@ public class controller extends HttpServlet {
 					request.setAttribute("searchQuery", searchQuery);
 					request.setAttribute("result", a);
 					request.setAttribute("numberOfSearchResults", docNumbers_of_results.size());
-					RequestDispatcher dispatcher = getServletContext()
+					dispatcher = getServletContext()
 							.getRequestDispatcher("/views/searchResults.jsp");
-					dispatcher.forward(request, response);	
+					dispatcher.forward(request, response);
 					
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
@@ -52,12 +54,24 @@ public class controller extends HttpServlet {
 				}
 
 				
+			}else if (str.equals("/show_a_result")){
+				String filePath = request.getParameter("filePath");
+				
+				String content = ms.readFileContent(filePath);
+				
+				request.setAttribute("content", content);
+				
+				dispatcher = getServletContext()
+						.getRequestDispatcher("/views/show_a_result.jsp");
+				dispatcher.forward(request, response);
 			}
 			else{
-	            RequestDispatcher dispatcher = getServletContext()
-	            .getRequestDispatcher("/views/index.jsp");
-	            dispatcher.forward(request, response);        
+	            dispatcher = getServletContext()
+	            		.getRequestDispatcher("/views/index.jsp"); 
+	            dispatcher.forward(request, response);
 			}
+			
+			
 	}
 
 }

@@ -1,7 +1,7 @@
-#Who is Superman?
+#Title: Who is Superman?
 #Creation date: 5.3.2014
 #Author: Wikipedia
-#Superman is the superhero persona of a fictional character that appears in comic books published by DC Comics, and is considered an American cultural icon.[1][2][3][4] The Superman character was created by writer Jerry Siegel and artist Joe Shuster, high school students living in Cleveland, Ohio, in 1933; the character was sold to Detective Comics, Inc.
+#Preview: Superman is the superhero persona of a fictional character that appears in comic books published by DC Comics, and is considered an American cultural icon.[1][2][3][4] The Superman character was created by writer Jerry Siegel and artist Joe Shuster, high school students living in Cleveland, Ohio, in 1933; the character was sold to Detective Comics, Inc.
 
 Superman is the superhero persona of a fictional character that appears in comic books published by DC Comics,
 and is considered an American cultural icon.[1][2][3][4] The Superman character was created by writer Jerry 

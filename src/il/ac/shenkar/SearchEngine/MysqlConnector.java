@@ -33,13 +33,8 @@ public class MysqlConnector {
 			// initializing connection to the database
 			Class.forName("com.mysql.jdbc.Driver");
 
-			// Vidrans connection
-			 connection = DriverManager.getConnection(
-			 "jdbc:mysql://localhost/searchengine", "root", "");
+			connection = DriverManager.getConnection("jdbc:mysql://localhost/searchengine", "root", "");
 
-			// Ofirs connection
-			//connection = DriverManager.getConnection(
-			//		"jdbc:mysql://localhost/searchengine", "jaja", "gaga");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -104,7 +99,8 @@ public class MysqlConnector {
 		String createPostingFileTable = "CREATE TABLE postingFile ("
 				+ "        docPath VARCHAR(300) NOT NULL, "
 				+ "        docNumber INT(4) KEY AUTO_INCREMENT,"
-				+ "		   deleted INT(1) DEFAULT 0    )";
+				+ "		   deleted INT(1) DEFAULT 0, "
+				+ "		   lastIndex BIGINT DEFAULT 0 )";    
 
 		try {
 			statement = connection.createStatement();
@@ -275,8 +271,9 @@ public class MysqlConnector {
 		System.out.println("Removing completed");
 	}
 
-	public void insert_file_to_db_if_doesnt_exists_or_deleted_before(String path)
+	public void insert_file_to_db_if_doesnt_exists_or_deleted_before(String path, long lastModified)
 			throws SQLException, IOException {
+		
 		// Fix path (ex. c:\\abc\\file...)
 		String pathFix = path.replace("\\", "\\\\");
 		// check if a path already exists in the table
@@ -299,9 +296,10 @@ public class MysqlConnector {
 			parseFile_and_add_to_index_file_table(path, docNum);
 
 			System.out.println("\nAdd completely - " + path);
-			
-		//this path was added before
+		
+		//Check if this file(path) has removed from db folder
 		} else {
+			
 			statement = connection.createStatement();
 			query = "SELECT docPath,docNumber	FROM postingFile "
 					+ "		WHERE docPath ='" + pathFix + "' AND deleted=1";
@@ -570,16 +568,20 @@ public class MysqlConnector {
 					
 					 switch (counter) {
 						 case 0: line = line.substring(1);
-						 fileDes.setTitle(line);
+						 String title= line.replaceAll("Title: ", "");
+						 fileDes.setTitle(title);
 						 break;
 						 case 1: line = line.substring(1);
-						 fileDes.setCreationDate(line);
+						 String creationDate= line.replaceAll("Creation date: ", "");
+						 fileDes.setCreationDate(creationDate);
 						 break;
 						 case 2: line = line.substring(1);
-						 fileDes.setAuthor(line);
+						 String author= line.replaceAll("Author: ", "");
+						 fileDes.setAuthor(author);
 						 break;
 						 case 3: line = line.substring(1);
-						 fileDes.setPreview(line);
+						 String preview= line.replaceAll("Preview: ", "");
+						 fileDes.setPreview(preview);
 						 break;
 					 }
 					 counter++;
@@ -593,62 +595,19 @@ public class MysqlConnector {
 		return fd.iterator();
 	}
 
-	// public List<FileDescriptor> getResult(String searchQuery) throws
-	// SQLException, IOException {
-	//
-	//
-	// List<Integer> docNumList = new ArrayList<Integer>();
-	// List<FileDescriptor> fileDesList = new ArrayList<FileDescriptor>();
-	//
-	// for(int i=0; i<docNumList.size(); i++){
-	// selectSQL = "SELECT * FROM postingFile WHERE docNumber=?";
-	// prepstate = connection.prepareStatement (selectSQL);
-	// prepstate.setInt(1, docNumList.get(i));
-	// rs = prepstate.executeQuery();
-	//
-	// while (rs.next()) {
-	// // Read file
-	// File f = new File(rs.getString("docPath"));
-	// BufferedReader br = new BufferedReader(new FileReader(f.getPath()));
-	// //StringBuilder sb = new StringBuilder();
-	// String line = br.readLine();
-	//
-	// int counter =0;
-	// FileDescriptor fileDes = new FileDescriptor();
-	// while (line != null) {
-	// // if line number is #0 | #1 | #2 - remove '#' from line variable
-	// /*(0) - Title
-	// /* (1) - Creation Date
-	// /* (2) - Author
-	// /* (3) - Preview
-	// /* (4) - Content */
-	//
-	// switch (counter) {
-	// case 0: line = line.substring(1);
-	// fileDes.setTitle(line);
-	// break;
-	// case 1: line = line.substring(1);
-	// fileDes.setCreationDate(line);
-	// break;
-	// case 2: line = line.substring(1);
-	// fileDes.setAuthor(line);
-	// break;
-	// case 3: line = line.substring(1);
-	// fileDes.setPreview(line);
-	// break;
-	// }
-	// counter++;
-	// line = br.readLine();
-	// if (counter==4) break;
-	// }
-	// br.close();
-	//
-	// fileDesList.add(fileDes);
-	//
-	// //System.out.println(fileDes.toString());
-	// //System.out.println("Content: "+fileDes.getContent().toString());
-	// }
-	// }
-	// return fileDesList;
-	// }
+	public String readFileContent(String filePath) throws IOException {
+		// Read file
+		 File f = new File(filePath);
+		 BufferedReader br = new BufferedReader(new FileReader(f.getPath()));
+		 
+		 StringBuilder allText = new StringBuilder();
+		 String line = br.readLine();
+		
+		 while (line != null) {
+			 allText.append(line+"<br>");
+			 line = br.readLine();
+		 }
+		 br.close();
+		 return allText.toString();
+	}
 }

@@ -1,7 +1,7 @@
-#What is Light?
+#Title: What is Light?
 #Creation date: 1.1.2014
 #Author: Wikipedia
-#Light is radiant energy, usually referring to electromagnetic radiation that is visible to the human eye, and is responsible for the sense of sight.[1] Visible light is usually defined as having a wavelength in the range of 400 nanometres (nm), or 400×10−9 m, to 700 nanometres – between the infrared
+#Preview: Light is radiant energy, usually referring to electromagnetic radiation that is visible to the human eye, and is responsible for the sense of sight.[1] Visible light is usually defined as having a wavelength in the range of 400 nanometres (nm), or 400×10−9 m, to 700 nanometres – between the infrared
 
 
 The speed of light in a vacuum is defined to be exactly 299,792,458 m/s (approximately 186,282 miles per second). The fixed value of the speed of light in SI units results from the fact that the metre is now defined in terms of the speed of light. All forms of electromagnetic radiation move at exactly this same speed in vacuum.
