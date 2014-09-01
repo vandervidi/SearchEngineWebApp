@@ -34,12 +34,12 @@ public class MysqlConnector {
 			Class.forName("com.mysql.jdbc.Driver");
 
 			// Vidrans connection
-			// connection = DriverManager.getConnection(
-			// "jdbc:mysql://localhost/searchengine", "root", "");
+			 connection = DriverManager.getConnection(
+			 "jdbc:mysql://localhost/searchengine", "root", "");
 
 			// Ofirs connection
-			connection = DriverManager.getConnection(
-					"jdbc:mysql://localhost/searchengine", "jaja", "gaga");
+			//connection = DriverManager.getConnection(
+			//		"jdbc:mysql://localhost/searchengine", "jaja", "gaga");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

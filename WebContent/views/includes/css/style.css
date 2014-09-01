@@ -25,9 +25,16 @@ body{
 #search_formContainer{
 	margin-top: 50px;
 }
-
-#result_formContainer{
+#topTitle{
 	margin-top: 10px;
+	font-size: 25px;
+	float: left;
+}
+#result_formContainer{
+	width:70%;
+	margin-top: 10px;
+	float: left;
+	padding-left: 15px;
 }
 #topSearch{
 	z-index:1;
@@ -35,10 +42,12 @@ body{
 	top: 0px;
 	left: 0px;
 	padding-left: 20px;
-	padding-bottom: 25px;
+	padding-bottom: 15px;
 	width: 100%;
 	display: block;
 	background-color:#FAA458;
+	 clear: both;
+    overflow: hidden;
 
 }
 #resultsContainer{
@@ -51,4 +60,27 @@ body{
 }
 .container{
 	margin-top:20px;
+}
+
+#numberOfResults{
+	font-size: 12px;
+	color: gray;
+}
+#resultDetailsContainer{
+	clear: both;
+    overflow: hidden;
+
+}
+#author{
+	float:left;
+	font-size: 12px;
+	color: gray;
+}
+#date{
+	float:left;
+	font-size: 12px;
+	color: gray;
+}
+#title{
+	font-size: 16px;
 }

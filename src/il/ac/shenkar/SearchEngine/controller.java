@@ -39,7 +39,9 @@ public class controller extends HttpServlet {
 					
 					Iterator a = ms.create_fileDescriptors_list_by_docNumbers(docNumbers_of_results);
 					
+					request.setAttribute("searchQuery", searchQuery);
 					request.setAttribute("result", a);
+					request.setAttribute("numberOfSearchResults", docNumbers_of_results.size());
 					RequestDispatcher dispatcher = getServletContext()
 							.getRequestDispatcher("/views/searchResults.jsp");
 					dispatcher.forward(request, response);	
