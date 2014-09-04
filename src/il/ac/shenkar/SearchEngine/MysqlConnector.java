@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -143,11 +144,12 @@ public class MysqlConnector {
 	}
 
 	// This function inserts a new row into the 'index File' table
-	public void insert_postingFile(String path) throws SQLException {
+	public void insert_postingFile(String path, long lastModified) throws SQLException {
 		PreparedStatement prepstate = connection
-				.prepareStatement("INSERT INTO `postingFile` (`docPath`) "
-						+ "VALUES (?)");
+				.prepareStatement("INSERT INTO `postingFile` (`docPath`, lastIndex) "
+						+ "VALUES (?, ?)");
 		prepstate.setString(1, path);
+		prepstate.setLong(2, lastModified);
 		prepstate.execute();
 		prepstate.close();
 
@@ -208,36 +210,11 @@ public class MysqlConnector {
 		statement.executeUpdate("DELETE FROM indexFile "
 				+ "		WHERE docNumber =" + docNum + ";");
 		System.out
-				.println("\nStep 1/2 - removed file from the posting file ,in index: "
+				.println("Step 1/2 - removed file from the posting file ,in index: "
 						+ docNum);
 		statement.close();
 	}
 
-	// public List<RowElement> searchWord(String q) throws SQLException {
-	// List<RowElement> rows = new ArrayList<>();
-	// statement = connection.createStatement();
-	//
-	// String query = "SELECT word, docNumber, freq "
-	// + "FROM indexFile WHERE word ='" + q + "' ORDER BY freq ASC;";
-	//
-	// try {
-	//
-	// ResultSet rs = statement.executeQuery(query);
-	// while (rs.next()) {
-	// String resultWord = rs.getString("word");
-	// int resultDocNum = rs.getInt("docNumber");
-	// int resultFreq = rs.getInt("freq");
-	//
-	// rows.add(new RowElement(resultWord, resultDocNum, resultFreq));
-	// System.out.println(resultWord + "\t" + resultDocNum + "\t"
-	// + resultFreq);
-	// }
-	// } catch (SQLException e) {
-	// e.printStackTrace();
-	// }
-	//
-	// return rows;
-	// }
 
 	public int checkNumRows_postingFile() throws SQLException {
 		int counter = 0;
@@ -287,7 +264,7 @@ public class MysqlConnector {
 		statement.close();
 		// If the path does not exist in the PostingFile table, add it.
 		if (equalNumRows == 0) {
-			insert_postingFile(path);
+			insert_postingFile(path, lastModified);
 
 			// get file docNum by path
 			int docNum = get_docNum_by_path_from_postingFile_table(path);
@@ -297,7 +274,8 @@ public class MysqlConnector {
 
 			System.out.println("\nAdd completely - " + path);
 		
-		//Check if this file(path) has removed from db folder
+		// The path exist in postingFile table
+		//Check if this file(path) has removed from db folder (deleted==1)
 		} else {
 			
 			statement = connection.createStatement();
@@ -323,8 +301,41 @@ public class MysqlConnector {
 				// insert to indexFile table
 				parseFile_and_add_to_index_file_table(path, docNumber);
 
+			//the path is exist and deleted==0
+			// check for changes on this file
+			}else{
+				
+				statement = connection.createStatement();
+				query = "SELECT docNumber,lastIndex	 FROM postingFile "
+						+ "		WHERE docPath ='" + pathFix + "' AND deleted=0";
+				rs = statement.executeQuery(query);
+				if (rs.last()){
+					// If file change remove words and index them again
+					long lastIndex_postingFile = rs.getLong("lastIndex");
+					int docNum_ToRemoveWords = rs.getInt("docNumber");
+					
+					if(rs!=null && lastIndex_postingFile != lastModified ){	
+						System.out.println("\nDetect changes in document: "+path);
+						setNew_lastModified_in_postingFile(docNum_ToRemoveWords, lastModified);
+						removeFileWords(docNum_ToRemoveWords);
+						parseFile_and_add_to_index_file_table(path, docNum_ToRemoveWords);
+						System.out.println("Step 2/2 - Index the words again for document: "+path);
+					}
+				}
+				statement.close();
 			}
 		}
+	}
+
+	private void setNew_lastModified_in_postingFile(int docNumber,long lastModified) throws SQLException {
+		statement = connection.createStatement();
+
+		// Change deleted column to 0
+		int check = statement.executeUpdate("UPDATE postingFile "
+					+ "		SET lastIndex="+ lastModified
+					+ "		WHERE docNumber =" + docNumber);
+
+		statement.close();
 	}
 
 	public int get_docNum_by_path_from_postingFile_table(String path)
@@ -410,6 +421,7 @@ public class MysqlConnector {
 		}
 		statement.close();
 		for (int i = 0; i < docNumbersToDelete.size(); i++) {
+			System.out.println("\nDetect invalid path in postingFile");
 			// remove all words from DB that Attributed to this path file (by
 			// filenumber)
 			removeFileWords(docNumbersToDelete.get(i));
