@@ -15,7 +15,7 @@
 		<h1>Search engine</h1>
 		<section id="search_formContainer">
 			<form action="../controller/search" method="get">
-				<input type="text" name="searchQuery" class="form-control" placeholder="What do you want to search for?">
+				<input type="text" name="searchQuery" class="form-control" placeholder="What do you want to search for?" required>
 				<input type="submit" value="search" class="btn btn-default">	
 			</form>
 		</section>

@@ -24,7 +24,7 @@ import java.util.List;
 
 public class MysqlConnector {
 	private static final MysqlConnector INSTANCE = new MysqlConnector();
-
+	private static final int GMISHUT = 1;
 	Connection connection = null;
 	Statement statement = null;
 
@@ -305,24 +305,24 @@ public class MysqlConnector {
 			// check for changes on this file
 			}else{
 				
-				statement = connection.createStatement();
-				query = "SELECT docNumber,lastIndex	 FROM postingFile "
-						+ "		WHERE docPath ='" + pathFix + "' AND deleted=0";
-				rs = statement.executeQuery(query);
-				if (rs.last()){
-					// If file change remove words and index them again
-					long lastIndex_postingFile = rs.getLong("lastIndex");
-					int docNum_ToRemoveWords = rs.getInt("docNumber");
-					
-					if(rs!=null && lastIndex_postingFile != lastModified ){	
-						System.out.println("\nDetect changes in document: "+path);
-						setNew_lastModified_in_postingFile(docNum_ToRemoveWords, lastModified);
-						removeFileWords(docNum_ToRemoveWords);
-						parseFile_and_add_to_index_file_table(path, docNum_ToRemoveWords);
-						System.out.println("Step 2/2 - Index the words again for document: "+path);
-					}
-				}
-				statement.close();
+//				statement = connection.createStatement();
+//				query = "SELECT docNumber,lastIndex	 FROM postingFile "
+//						+ "		WHERE docPath ='" + pathFix + "' AND deleted=0";
+//				rs = statement.executeQuery(query);
+//				if (rs.last()){
+//					// If file change remove words and index them again
+//					long lastIndex_postingFile = rs.getLong("lastIndex");
+//					int docNum_ToRemoveWords = rs.getInt("docNumber");
+//					
+//					if(rs!=null && lastIndex_postingFile != lastModified ){	
+//						System.out.println("\nDetect changes in document: "+path);
+//						setNew_lastModified_in_postingFile(docNum_ToRemoveWords, lastModified);
+//						removeFileWords(docNum_ToRemoveWords);
+//						parseFile_and_add_to_index_file_table(path, docNum_ToRemoveWords);
+//						System.out.println("Step 2/2 - Index the words again for document: "+path);
+//					}
+//				}
+//				statement.close();
 			}
 		}
 	}
@@ -449,6 +449,16 @@ public class MysqlConnector {
 	}
 
 	public List<String> analyzeQuery(String searchQuery) throws SQLException,IOException {
+	    String str = "a,able,about,across,after,all,almost,also,am,among,an,and,any,are,as,at,be,because,been,but,by,can,cannot,could,dear,did,do,does,either,else,ever,every,for,from,get,got,had,has,have,he,her,hers,him,his,how,however,i,if,in,into,is,it,its,just,least,let,like,likely,may,me,might,most,must,my,neither,no,nor,not,of,off,often,on,only,or,other,our,own,rather,said,say,says,she,should,since,so,some,than,that,the,their,them,then,there,these,they,this,tis,to,too,twas,us,wants,was,we,were,what,when,where,which,while,who,whom,why,will,with,would,yet,you,your";
+		String stopList[] = str.split(",");
+		
+		for (String s : stopList){
+			String regex = "\\s*\\b"+s+"\\b\\s*";
+			searchQuery = searchQuery.replaceAll(regex, " ");
+		}
+		
+		System.out.println(searchQuery);
+		
 		// Split by OR operator
 		List<String> splitByOR = new ArrayList<String>(Arrays.asList(searchQuery.split(" OR ")));
 
@@ -539,6 +549,8 @@ public class MysqlConnector {
 		words = words.deleteCharAt(words.length() - 1);
 
 		int numberOfWords = stringList.size();
+		
+		if (numberOfWords-1 !=0) numberOfWords--;
 
 		statement = connection.createStatement();
 		String query = "SELECT docNumber  FROM indexFile "

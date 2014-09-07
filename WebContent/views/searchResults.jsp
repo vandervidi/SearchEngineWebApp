@@ -16,7 +16,7 @@
 			<section id="topTitle">Search Engine</section>
 				<section id="result_formContainer">
 					<form action="../controller/search" method="get">
-						<input type="text" name="searchQuery" class="form-control" placeholder="What do you want to search for?" value="<% out.println(request.getAttribute("searchQuery"));%>">
+						<input type="text" name="searchQuery" class="form-control" placeholder="What do you want to search for?" value="<% out.println(request.getAttribute("searchQuery"));%>" required>
 						<input type="submit" value="search" class="btn btn-default">	
 					</form>
 				</section>
