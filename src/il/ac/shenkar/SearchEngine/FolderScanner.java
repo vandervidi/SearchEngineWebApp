@@ -36,8 +36,21 @@ public class FolderScanner implements Runnable{
 			try {
 				for (File file : listOfFiles) {
 				    if (file.isFile()) {
-				    	ms.insert_file_to_db_if_doesnt_exists_or_deleted_before(file.getPath(), file.lastModified());	
+				    	ms.insert_file_to_db_if_doesnt_exists_or_deleted_before("text", file.getPath(), file.lastModified());	
 				    }
+				    else{
+				    	//check the folder of pictures
+				    	if (file.isDirectory() && file.getName().equals("images")){
+				    		File[] listOfImages = file.listFiles();
+			    			for (File image : listOfImages) {
+			    				if (image.isFile() && !image.getName().split("\\.")[image.getName().split("\\.").length-1].equals("txt")) {
+						    		//this is image file
+			    					//System.out.println( image.getName() );
+						    		ms.insert_file_to_db_if_doesnt_exists_or_deleted_before("image", image.getPath(), image.lastModified());	
+							    }
+			    			}
+				    	}
+					}
 				}
 			
 				// Sorting the index file by an alfabetic order

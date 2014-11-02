@@ -11,6 +11,8 @@
 	<title>Search Engine Web App</title>
 </head>
 <body>
+<a id="upload" href="upload">Upload</a>
+<br><br>
 	<div id="wrapper">
 		<h1>Search engine</h1>
 		<section id="search_formContainer">

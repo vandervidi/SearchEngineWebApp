@@ -101,7 +101,9 @@ public class MysqlConnector {
 				+ "        docPath VARCHAR(300) NOT NULL, "
 				+ "        docNumber INT(4) KEY AUTO_INCREMENT,"
 				+ "		   deleted INT(1) DEFAULT 0, "
-				+ "		   lastIndex BIGINT DEFAULT 0 )";    
+				+ "		   lastIndex BIGINT DEFAULT 0,"
+				+ "		   isPicture BOOLEAN NOT NULL DEFAULT 0,"
+				+ "		   tagNames VARCHAR(300) NOT NULL DEFAULT '' )";   
 
 		try {
 			statement = connection.createStatement();
@@ -143,18 +145,62 @@ public class MysqlConnector {
 		statement.close();
 	}
 
-	// This function inserts a new row into the 'index File' table
-	public void insert_postingFile(String path, long lastModified) throws SQLException {
-		PreparedStatement prepstate = connection
-				.prepareStatement("INSERT INTO `postingFile` (`docPath`, lastIndex) "
-						+ "VALUES (?, ?)");
-		prepstate.setString(1, path);
-		prepstate.setLong(2, lastModified);
-		prepstate.execute();
-		prepstate.close();
+	// This function inserts a new row into the 'posting File' table
+	public void insert_file_postingFile(String type, String path, long lastModified, String tagNames) throws SQLException, IOException {
+		if (type.equals("text")){
+			PreparedStatement prepstate = connection
+					.prepareStatement("INSERT INTO `postingFile` (`docPath`, lastIndex) "
+							+ "VALUES (?, ?)");
+			prepstate.setString(1, path);
+			prepstate.setLong(2, lastModified);
+			prepstate.execute();
+			prepstate.close();
+		}else{
+			//Open tag-name file and create a string of all text in it.
+			//get the (tag-name)txt file name from image path
+			
+			//String pathWithoutExtension = path.substring(0, path.length()-3);
+			//String [] pathParts = path.split("\\.");
+			//for (int i=0; i<pathParts.length-1; i++){
+			//	pathWithoutExtension.append(pathParts[i]);
+			//}
 
+			//update the sql
+			PreparedStatement prepstate = connection
+					.prepareStatement("INSERT INTO `postingFile` (`docPath`, lastIndex, isPicture, tagNames) "
+							+ "VALUES (?, ?, ?, ?)");
+			prepstate.setString(1, path);
+			prepstate.setLong(2, lastModified);
+			prepstate.setInt(3, 1);
+			prepstate.setString(4, tagNames);
+			prepstate.execute();
+			prepstate.close();
+//			PreparedStatement prepstate = connection
+//					.prepareStatement("INSERT INTO `postingFile` (`docPath`, lastIndex) "
+//							+ "VALUES (?, ?)");
+//			prepstate.setString(1, path);
+//			prepstate.setLong(2, lastModified);
+//			prepstate.execute();
+//			prepstate.close();
+		}
 		// System.out.println("Add " + path + " to posting file completly.");
 	}
+	
+	// This function inserts a new row into the 'index File' table
+		public void insert_pic_postingFile(String path, String fileExtension, long lastModified, String tagNames) throws SQLException {
+			//String pathFix = 
+			PreparedStatement prepstate = connection
+					.prepareStatement("INSERT INTO `postingFile` (`docPath`, lastIndex, isPicture, tagNames) "
+							+ "VALUES (?, ?, ?, ?)");
+			prepstate.setString(1, path);
+			prepstate.setLong(2, lastModified);
+			prepstate.setInt(3, 1);
+			prepstate.setString(4, tagNames);
+			prepstate.execute();
+			prepstate.close();
+
+			// System.out.println("Add " + path + " to posting file completly.");
+		}
 
 	// This function inserts a new row into the 'index File' table
 	public void insert_indexFile(String word, int docNum, int freq)
@@ -248,7 +294,7 @@ public class MysqlConnector {
 		System.out.println("Removing completed");
 	}
 
-	public void insert_file_to_db_if_doesnt_exists_or_deleted_before(String path, long lastModified)
+	public void insert_file_to_db_if_doesnt_exists_or_deleted_before(String type, String path, long lastModified)
 			throws SQLException, IOException {
 		
 		// Fix path (ex. c:\\abc\\file...)
@@ -264,13 +310,37 @@ public class MysqlConnector {
 		statement.close();
 		// If the path does not exist in the PostingFile table, add it.
 		if (equalNumRows == 0) {
-			insert_postingFile(path, lastModified);
+			
+			String pathOfTagNames;
+			String tagNames = null; // The complete text from the file
+			if (type.equals("image")){
+				pathOfTagNames = path.substring(0, path.length()-3)+"txt";
+				
+				//read the file
+				File file = new File(pathOfTagNames);
+				BufferedReader br = new BufferedReader(new FileReader(file.getPath()));
+				StringBuilder sb = new StringBuilder();
+				String line = br.readLine();
+		
+				while (line != null) {
+					sb.append(line);
+					sb.append(System.lineSeparator());
+					line = br.readLine();
+				}
+				br.close();
+				tagNames = sb.toString();
+				tagNames = tagNames.replaceAll("(?<!\\d)\\.|\\.+$|[^a-zA-Z0-9. ]"," ");
+				tagNames = tagNames.replaceAll("\r", "");
+				tagNames = tagNames.replaceAll("\n", " ");
+			}
+			
+			insert_file_postingFile(type, path, lastModified, tagNames);
 
 			// get file docNum by path
 			int docNum = get_docNum_by_path_from_postingFile_table(path);
-
+			
 			// insert to indexFile table
-			parseFile_and_add_to_index_file_table(path, docNum);
+			parseFile_and_add_to_index_file_table(type, path, docNum, tagNames);
 
 			System.out.println("\nAdd completely - " + path);
 		
@@ -299,7 +369,7 @@ public class MysqlConnector {
 				System.out.println("\nThis file that was deleted before - has recovered completely. \n"+path);
 				
 				// insert to indexFile table
-				parseFile_and_add_to_index_file_table(path, docNumber);
+				parseFile_and_add_to_index_file_table(type, path, docNumber, "");
 
 			//the path is exist and deleted==0
 			// check for changes on this file
@@ -326,6 +396,16 @@ public class MysqlConnector {
 			}
 		}
 	}
+	
+//	public void insert_pic_to_db(String path, String fileExtension, long currentTimeMillis, String tagNames) throws SQLException, IOException {
+//		insert_pic_postingFile(path, fileExtension ,currentTimeMillis, tagNames);
+//
+//		// get file docNum by path
+//		int docNum = get_docNum_by_path_from_postingFile_table(path);
+//
+//		// insert to indexFile table
+//		parseFile_and_add_to_index_file_table(path, "image", docNum, tagNames);
+//	}
 
 	private void setNew_lastModified_in_postingFile(int docNumber,long lastModified) throws SQLException {
 		statement = connection.createStatement();
@@ -358,26 +438,30 @@ public class MysqlConnector {
 	 * word from the file to the 'Index file' table 3. Sorts the Index file
 	 * structure
 	 */
-	public void parseFile_and_add_to_index_file_table(String path, int docNum)
+	public void parseFile_and_add_to_index_file_table(String type, String path, int docNum, String tagNames)
 			throws IOException, SQLException {
+		
 		String everything = null; // The complete text from the file
 		String words[];
-		File file = new File(path);
-		BufferedReader br = new BufferedReader(new FileReader(file.getPath()));
-		StringBuilder sb = new StringBuilder();
-		String line = br.readLine();
-
-		while (line != null) {
-			sb.append(line);
-			sb.append(System.lineSeparator());
-			line = br.readLine();
+		
+		if (type.equals("text")){	
+			File file = new File(path);
+			BufferedReader br = new BufferedReader(new FileReader(file.getPath()));
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+	
+			while (line != null) {
+				sb.append(line);
+				sb.append(System.lineSeparator());
+				line = br.readLine();
+			}
+			br.close();
+			everything = sb.toString();
+		}else if (type.equals("image")){
+			everything = tagNames;
 		}
-		br.close();
-		everything = sb.toString();
-
 		// Removing special characters from the text
-		everything = everything.replaceAll("(?<!\\d)\\.|\\.+$|[^a-zA-Z0-9. ]",
-				" ");
+		everything = everything.replaceAll("(?<!\\d)\\.|\\.+$|[^a-zA-Z0-9. ]"," ");
 		// everything =
 		// everything.replaceAll("(?<=\\d)\\.(?!\\d)|(?<!\\d)\\.|[^a-zA-Z0-9. ]",
 		// " ");
@@ -538,7 +622,7 @@ public class MysqlConnector {
 
 	public List<Integer> getDocNumList(List<String> stringList)
 			throws SQLException {
-		List<Integer> DocumentNumbers = new ArrayList<Integer>();
+		List<Integer> documentNumbers = new ArrayList<Integer>();
 		StringBuilder words = new StringBuilder();
 		// example of the string we are trying to create:
 		// 'blue','pen','green','key'
@@ -550,17 +634,17 @@ public class MysqlConnector {
 
 		int numberOfWords = stringList.size();
 		
-		if (numberOfWords-1 !=0) numberOfWords--;
+		//if (numberOfWords-1 !=0) numberOfWords--;
 
 		statement = connection.createStatement();
 		String query = "SELECT docNumber  FROM indexFile "
 				+ "		WHERE word IN (" + words + ")" + "		GROUP BY docNumber"
-				+ "		HAVING COUNT(DISTINCT word) = " + numberOfWords;
+				+ "		HAVING COUNT(DISTINCT word) >= " + numberOfWords/2;
 		ResultSet rs = statement.executeQuery(query);
 		while (rs.next()) {
-			DocumentNumbers.add(rs.getInt("docNumber"));
+			documentNumbers.add(rs.getInt("docNumber"));
 		}
-		return DocumentNumbers;
+		return documentNumbers;
 	}
 
 	public Iterator create_fileDescriptors_list_by_docNumbers(List<Integer> docNumbers_of_results) throws SQLException, IOException {
@@ -582,37 +666,47 @@ public class MysqlConnector {
 				 int counter =0;
 				 FileDescriptor fileDes = new FileDescriptor();
 				 fileDes.setPath(rs.getString("docPath"));
-				 while (line != null) {
-					 // if line number is #0 | #1 | #2 - remove '#' from line variable
-					 /* (0) - Title
-					 /* (1) - Creation Date
-					 /* (2) - Author
-					 /* (3) - Preview 
-					 */
-					
-					 switch (counter) {
-						 case 0: line = line.substring(1);
-						 String title= line.replaceAll("Title: ", "");
-						 fileDes.setTitle(title);
-						 break;
-						 case 1: line = line.substring(1);
-						 String creationDate= line.replaceAll("Creation date: ", "");
-						 fileDes.setCreationDate(creationDate);
-						 break;
-						 case 2: line = line.substring(1);
-						 String author= line.replaceAll("Author: ", "");
-						 fileDes.setAuthor(author);
-						 break;
-						 case 3: line = line.substring(1);
-						 String preview= line.replaceAll("Preview: ", "");
-						 fileDes.setPreview(preview);
-						 break;
+				 
+				 if (rs.getInt("isPicture")!=1){
+					 while (line != null) {
+						 // if line number is #0 | #1 | #2 - remove '#' from line variable
+						 /* (0) - Title
+						 /* (1) - Creation Date
+						 /* (2) - Author
+						 /* (3) - Preview 
+						 */
+						
+						 switch (counter) {
+							 case 0: line = line.substring(1);
+							 String title= line.replaceAll("Title: ", "");
+							 fileDes.setTitle(title);
+							 break;
+							 case 1: line = line.substring(1);
+							 String creationDate= line.replaceAll("Creation date: ", "");
+							 fileDes.setCreationDate(creationDate);
+							 break;
+							 case 2: line = line.substring(1);
+							 String author= line.replaceAll("Author: ", "");
+							 fileDes.setAuthor(author);
+							 break;
+							 case 3: line = line.substring(1);
+							 String preview= line.replaceAll("Preview: ", "");
+							 fileDes.setPreview(preview);
+							 break;
+						 }
+						 counter++;
+						 line = br.readLine();
+						 if (counter==4) break;
 					 }
-					 counter++;
-					 line = br.readLine();
-					 if (counter==4) break;
+					 br.close();
+				 }else{
+					 //this is a picture
+					 fileDes.setTitle("Title: (picture) "+rs.getString("tagNames") );
+					 fileDes.setCreationDate("Creation date: -");
+					 fileDes.setAuthor("Author: -");
+					 fileDes.setPreview("Preview: -");
 				 }
-				 br.close();
+				 
 				 fd.add(fileDes);
 			 }
 		}
@@ -633,5 +727,11 @@ public class MysqlConnector {
 		 }
 		 br.close();
 		 return allText.toString();
+	}
+
+	public void insert_image_to_db_if_doesnt_exists_or_deleted_before(
+			String path, long lastModified) {
+		// TODO Auto-generated method stub
+		
 	}
 }
