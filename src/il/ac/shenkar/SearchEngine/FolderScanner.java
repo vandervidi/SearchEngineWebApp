@@ -29,7 +29,7 @@ public class FolderScanner implements Runnable{
 
 	@Override
 	public void run() {
-		File folder = new File( System.getProperty("user.dir")+"\\db" );
+		File folder = new File( System.getProperty("user.dir")+"\\WebContent\\db" );
 		
 		while (true){
 			File[] listOfFiles = folder.listFiles();

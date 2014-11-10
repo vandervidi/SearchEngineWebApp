@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=windows-1255"
+<!-- <%@ page language="java" contentType="text/html; charset=windows-1255"
     pageEncoding="windows-1255"%>
 <!DOCTYPE html>
 <html>
@@ -10,10 +10,17 @@
 		<article id="numberOfResults">
 			<p>
 				<%
+					String filePath = (String)request.getAttribute("filePath");
 					String content = (String)request.getAttribute("content");
-					out.println(content);
+					String isPic = (String)request.getAttribute("isPic");
+					if (isPic.equals("true")){
+						out.println("<img src='"+filePath+"'></img>");
+					}else{
+						out.println(content);
+					}
 				%>
 			</p>
 		</article>
 	</body>
 </html>
+-->

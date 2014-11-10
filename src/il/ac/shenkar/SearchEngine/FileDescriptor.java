@@ -6,18 +6,32 @@ public class FileDescriptor {
 	private String author;
 	private String preview;
 	private String path;
+	private String isPic;
 //	private StringBuilder content;
 	
-//	public FileDescriptor() {
-//		content = new StringBuilder();
-//	}
+	public FileDescriptor() {
+		isPic = "false";
+	}
+
+
 
 	@Override
 	public String toString() {
-		return "FileDescriptor [title=" + title + ", author=" + author
-				+ ", creationDate=" + creationDate + "]";
+		return "FileDescriptor [title=" + title + ", creationDate="
+				+ creationDate + ", author=" + author + ", preview=" + preview
+				+ ", path=" + path + ", isPic=" + isPic + "]";
 	}
 
+
+
+	public String isPic() {
+		return isPic;
+	}
+	public void setPic(String isPic) {
+		this.isPic = isPic;
+	}
+	
+	
 	public String getTitle() {
 		return title;
 	}
@@ -59,20 +73,4 @@ public class FileDescriptor {
 	public void setPath(String path) {
 		this.path = path;
 	}
-
-	
-	
-//	public StringBuilder getContent() {
-//		return content;
-//	}
-
-//	public void setContent(StringBuilder content) {
-//		this.content = content;
-//	}
-//	public void appendContent (String content){
-//		this.content.append(content);
-//	}
-	
-	
-	
 }

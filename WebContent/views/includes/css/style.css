@@ -2,6 +2,10 @@
 	margin: 0px ;
 	padding: 0px ;
 }
+a {
+  color:inherit;
+  text-decoration: none;
+}
 html{
 	height: 100%;
 }
@@ -25,11 +29,17 @@ body{
 #search_formContainer{
 	margin-top: 50px;
 }
+#topTitle_link:hover, #topTitle_link:visited, #topTitle_link:link, #topTitle_link:active{
+	color:inherit;
+	text-decoration: none;
+}
+
 #topTitle{
 	margin-top: 10px;
 	font-size: 25px;
 	float: left;
 }
+
 #result_formContainer{
 	width:70%;
 	margin-top: 10px;

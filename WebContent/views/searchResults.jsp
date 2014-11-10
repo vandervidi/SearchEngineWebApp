@@ -13,7 +13,7 @@
 	<body>
 		<div class="wrapper">
 			<nav id="topSearch">
-			<section id="topTitle">Search Engine</section>
+			<a id="topTitle_link" href="../controller/"> <section id="topTitle">Search Engine</section> </a>
 				<section id="result_formContainer">
 					<form action="../controller/search" method="get">
 						<input type="text" name="searchQuery" class="form-control" placeholder="What do you want to search for?" value="<% out.println(request.getAttribute("searchQuery"));%>" required>
@@ -48,12 +48,17 @@
 							}
 						}
 						
+						int startIn = fileItem.getPath().indexOf("\\db");
+						int endIn = fileItem.getPath().length();
+						String pathWithoutStart = fileItem.getPath().substring(startIn, endIn);
+						
 						out.println("<article class='container'>	"
-								//<a href="file:///C:\Users\joe\Desktop\tasks.txt">click me</a>
-									+"	<section id='title'> <a href='../controller/show_a_result?filePath="+fileItem.getPath()+"' target='_blank'>"+ fileItem.getTitle() +"</a></section>"
+									//http://localhost:8080/SearchEngineWebApp/db/images/1.1414669848596.jpg
+									//<a href="../db/file.txt" target="_blank">Who is Superman?</a>
+									+"	<section id='title'> <a href='.."+pathWithoutStart+"' target='_blank'>"+ fileItem.getTitle() +"</a></section>"
 									+"	<section id='preview'>"+ preview_with_bold_text +"</section>"
 									+"	<section id='resultDetailsContainer'>"
-									+"		<section id='author'>" + fileItem.getAuthor() +",&nbsp </section>" 
+									+"		<section id='author'>" + fileItem.getAuthor() +",&nbsp </section>"
 									+"		<section id='date'>" + fileItem.getCreationDate() +"</section>" 
 									+"	</section>"
 									+"</article><hr>");

@@ -14,7 +14,7 @@
 <a id="upload" href="upload">Upload</a>
 <br><br>
 	<div id="wrapper">
-		<h1>Search engine</h1>
+		<h1>Search Engine</h1>
 		<section id="search_formContainer">
 			<form action="../controller/search" method="get">
 				<input type="text" name="searchQuery" class="form-control" placeholder="What do you want to search for?" required>

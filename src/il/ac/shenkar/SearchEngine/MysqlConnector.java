@@ -705,6 +705,7 @@ public class MysqlConnector {
 					 fileDes.setCreationDate("Creation date: -");
 					 fileDes.setAuthor("Author: -");
 					 fileDes.setPreview("Preview: -");
+					 fileDes.setPic("true");
 				 }
 				 
 				 fd.add(fileDes);
