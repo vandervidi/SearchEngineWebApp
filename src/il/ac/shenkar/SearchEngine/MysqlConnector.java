@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -208,7 +209,7 @@ public class MysqlConnector {
 		PreparedStatement prepstate = connection
 				.prepareStatement("INSERT INTO `indexFile` (`word`, `docNumber`, `freq`) "
 						+ "VALUES (?, ?, ?)");
-		prepstate.setString(1, word);
+		prepstate.setString(1, word.toLowerCase());
 		prepstate.setInt(2, docNum);
 		prepstate.setInt(3, freq);
 
@@ -328,7 +329,7 @@ public class MysqlConnector {
 					line = br.readLine();
 				}
 				br.close();
-				tagNames = sb.toString();
+				tagNames = sb.toString().toLowerCase();
 				tagNames = tagNames.replaceAll("(?<!\\d)\\.|\\.+$|[^a-zA-Z0-9. ]"," ");
 				tagNames = tagNames.replaceAll("\r", "");
 				tagNames = tagNames.replaceAll("\n", " ");
@@ -650,9 +651,10 @@ public class MysqlConnector {
 	public Iterator create_fileDescriptors_list_by_docNumbers(List<Integer> docNumbers_of_results) throws SQLException, IOException {
 		List <FileDescriptor> fd = new ArrayList<FileDescriptor>();
 		for( int docNum : docNumbers_of_results ){
-			String selectSQL = "SELECT * FROM postingFile WHERE docNumber=?";
+			String selectSQL = "SELECT * FROM postingFile WHERE docNumber=? AND deleted=?";
 			PreparedStatement prepstate = connection.prepareStatement (selectSQL);
 			prepstate.setInt(1, docNum);
+			prepstate.setInt(2, 0);
 			ResultSet rs = prepstate.executeQuery();
 			
 			 while (rs.next()) {
@@ -677,7 +679,7 @@ public class MysqlConnector {
 						 */
 						
 						 switch (counter) {
-							 case 0: line = line.substring(1);
+							 case 0: line = line.substring(1);	//remove the # and take the sentence
 							 String title= line.replaceAll("Title: ", "");
 							 fileDes.setTitle(title);
 							 break;
@@ -696,7 +698,34 @@ public class MysqlConnector {
 						 }
 						 counter++;
 						 line = br.readLine();
-						 if (counter==4) break;
+						 if (counter==4){
+//							 if (fileDes.getTitle() == null || fileDes.getTitle().length() ==0){
+//								 fileDes.setTitle(f.getName());
+//							 }
+//							 if (fileDes.getCreationDate() == null || fileDes.getCreationDate().length() ==0){
+//								 Calendar calendar = Calendar.getInstance();
+//								    calendar.setTimeInMillis(f.lastModified());
+//								    int mYear = calendar.get(Calendar.YEAR);
+//								    int mMonth = calendar.get(Calendar.MONTH);
+//								    int mDay = calendar.get(Calendar.DAY_OF_MONTH);
+//								 fileDes.setCreationDate(mDay+"."+mMonth+"."+mYear);
+//							 }
+//							 if (fileDes.getAuthor() == null || fileDes.getAuthor().length() ==0){
+//								 fileDes.setAuthor("Author: -");
+//							 }
+//							 if (fileDes.getPreview() == null || fileDes.getPreview().length() ==0){
+//								 StringBuilder lineBuffer = new StringBuilder();
+//								 for (int j=0; j<3; j++){
+//									 if (line!= null) {
+//										 lineBuffer.append(line);
+//									 }
+//									 line = br.readLine();
+//								 }
+//								 
+//								 fileDes.setPreview(lineBuffer.toString());
+//							 }
+							 break;
+						 }
 					 }
 					 br.close();
 				 }else{
