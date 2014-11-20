@@ -11,7 +11,11 @@
 	<title>Search Engine Web App</title>
 </head>
 <body>
-<a id="upload" href="upload">Upload</a>
+<a id="adminConfiguration" href="../controller/adminLogin">Configuration</a>
+
+
+
+
 <br><br>
 	<div id="wrapper">
 		<h1>Search Engine</h1>

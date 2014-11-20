@@ -3,18 +3,24 @@ package il.ac.shenkar.SearchEngine;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+import com.mysql.jdbc.Statement;
 
 @WebServlet("/controller/*")
 public class controller extends HttpServlet {
@@ -133,11 +139,33 @@ public class controller extends HttpServlet {
 		System.out.println("doGet: " + str);
 
 		if (str.equals("/upload")) {
-
 			request.getRequestDispatcher("/views/upload.jsp").forward(request, response);
 
+		} 
+		if (str.equals("/adminLogin")) {
+			request.getRequestDispatcher("/views/adminLogin.html").forward(request, response);
 
-		} else if (str.equals("/search")) {
+		}
+		else if (str.equals("/getFilesList")) {
+			ArrayList<FileSchema> fs = new ArrayList<FileSchema>();
+			try {
+				ms.statement = ms.connection.createStatement();
+				String query = "SELECT *  FROM postingFile WHERE isPicture = 0";
+				ResultSet rs = ms.statement.executeQuery(query);
+				while (rs.next()) {
+					fs.add(new FileSchema(rs.getString("docPath"),rs.getInt("docNumber"),rs.getInt("deleted")));
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			request.setAttribute("files", fs);
+			dispatcher = getServletContext().getRequestDispatcher("/views/listOfFiles.jsp");
+			dispatcher.forward(request, response);
+
+			
+		}  else if (str.equals("/search")) {
 
 			String searchQuery = request.getParameter("searchQuery");
 			System.out.println(searchQuery);
@@ -161,7 +189,9 @@ public class controller extends HttpServlet {
 				e.printStackTrace();
 			}
 
-		} else {
+		} 
+		
+		else {
 			dispatcher = getServletContext().getRequestDispatcher("/views/index.jsp");
 			dispatcher.forward(request, response);
 		}
