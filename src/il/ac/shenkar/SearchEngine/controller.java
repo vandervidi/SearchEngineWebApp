@@ -145,8 +145,7 @@ public class controller extends HttpServlet {
 			try {
 				List<String> splitedQueryList = ms.analyzeQuery(searchQuery);
 
-				List<Integer> docNumbers_of_results = ms
-						.getDocNumResults(splitedQueryList);
+				List<Integer> docNumbers_of_results = ms.getDocNumResults(splitedQueryList);
 
 				Iterator<FileDescriptor> result = ms.create_fileDescriptors_list_by_docNumbers(docNumbers_of_results);
 

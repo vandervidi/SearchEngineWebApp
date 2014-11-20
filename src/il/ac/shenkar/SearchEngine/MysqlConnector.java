@@ -537,6 +537,8 @@ public class MysqlConnector {
 	    String str = "a,able,about,across,after,all,almost,also,am,among,an,and,any,are,as,at,be,because,been,but,by,can,cannot,could,dear,did,do,does,either,else,ever,every,for,from,get,got,had,has,have,he,her,hers,him,his,how,however,i,if,in,into,is,it,its,just,least,let,like,likely,may,me,might,most,must,my,neither,no,nor,not,of,off,often,on,only,or,other,our,own,rather,said,say,says,she,should,since,so,some,than,that,the,their,them,then,there,these,they,this,tis,to,too,twas,us,wants,was,we,were,what,when,where,which,while,who,whom,why,will,with,would,yet,you,your";
 		String stopList[] = str.split(",");
 		
+		searchQuery = searchQuery.toLowerCase();
+		
 		for (String s : stopList){
 			String regex = "\\s*\\b"+s+"\\b\\s*";
 			searchQuery = searchQuery.replaceAll(regex, " ");
@@ -545,12 +547,12 @@ public class MysqlConnector {
 		System.out.println(searchQuery);
 		
 		// Split by OR operator
-		List<String> splitByOR = new ArrayList<String>(Arrays.asList(searchQuery.split(" OR ")));
+		List<String> splitByOR = new ArrayList<String>(Arrays.asList(searchQuery.split(" or ")));
 
 		// Run on every element of splitByOR list and remove AND word
 		// and get array of words.
 		for (int i=0; i<splitByOR.size(); i++) {
-			String query = splitByOR.get(i).replace(" AND ", " ");
+			String query = splitByOR.get(i).replace(" and ", " ");
 			query = query.trim();
 			splitByOR.set(i, query);
 		}
@@ -572,7 +574,7 @@ public class MysqlConnector {
 			 * loop gorj
 			 */
 			// If words contains a substring "NOT"
-			if (words.contains("NOT")) {
+			if (words.contains("not")) {
 				// list - dog, big duck
 				// remove 'NOT' and split
 				// string(0) , string(1)
@@ -664,10 +666,22 @@ public class MysqlConnector {
 				 
 				 //StringBuilder sb = new StringBuilder();
 				 String line = br.readLine();
-				
+				 StringBuilder lineBuffer = new StringBuilder();
+				 
 				 int counter =0;
 				 FileDescriptor fileDes = new FileDescriptor();
 				 fileDes.setPath(rs.getString("docPath"));
+				 
+				 /* init values */
+				 fileDes.setTitle(f.getName()); // name
+				 Calendar calendar = Calendar.getInstance();
+				    calendar.setTimeInMillis(f.lastModified());
+				    int mYear = calendar.get(Calendar.YEAR);
+				    int mMonth = calendar.get(Calendar.MONTH);
+				    int mDay = calendar.get(Calendar.DAY_OF_MONTH);
+				    fileDes.setCreationDate(mDay+"."+mMonth+"."+mYear); //creation date
+				 fileDes.setAuthor("Author: -"); //Author
+				 fileDes.setPreview("no preview"); // name 
 				 
 				 if (rs.getInt("isPicture")!=1){
 					 while (line != null) {
@@ -679,52 +693,62 @@ public class MysqlConnector {
 						 */
 						
 						 switch (counter) {
-							 case 0: line = line.substring(1);	//remove the # and take the sentence
-							 String title= line.replaceAll("Title: ", "");
-							 fileDes.setTitle(title);
+							 case 0: 
+								if (line.contains("Title: ")){
+									line = line.substring(1);	//remove the # and take the sentence
+									String title= line.replaceAll("Title: ", "");
+									fileDes.setTitle(title);
+								}
 							 break;
-							 case 1: line = line.substring(1);
-							 String creationDate= line.replaceAll("Creation date: ", "");
-							 fileDes.setCreationDate(creationDate);
+							 case 1: 
+								if (line.contains("Creation date: ")){
+									line = line.substring(1);
+							 		String creationDate= line.replaceAll("Creation date: ", "");
+							 		fileDes.setCreationDate(creationDate);
+								}
 							 break;
-							 case 2: line = line.substring(1);
-							 String author= line.replaceAll("Author: ", "");
-							 fileDes.setAuthor(author);
+							 case 2: 
+								 if (line.contains("Author: ")){
+									line = line.substring(1);
+								 	String author= line.replaceAll("Author: ", "");
+								 	fileDes.setAuthor(author);
+								 }
 							 break;
-							 case 3: line = line.substring(1);
-							 String preview= line.replaceAll("Preview: ", "");
-							 fileDes.setPreview(preview);
+							 case 3: 
+								 if (line.contains("Preview: ")){
+								 	line = line.substring(1);
+								 	String preview= line.replaceAll("Preview: ", "");
+								 	fileDes.setPreview(preview);
+								 }
 							 break;
 						 }
 						 counter++;
+						 lineBuffer.append(line);
 						 line = br.readLine();
+						 
+						 
+						 // preview should be with relavant content
 						 if (counter==4){
-//							 if (fileDes.getTitle() == null || fileDes.getTitle().length() ==0){
-//								 fileDes.setTitle(f.getName());
-//							 }
-//							 if (fileDes.getCreationDate() == null || fileDes.getCreationDate().length() ==0){
-//								 Calendar calendar = Calendar.getInstance();
-//								    calendar.setTimeInMillis(f.lastModified());
-//								    int mYear = calendar.get(Calendar.YEAR);
-//								    int mMonth = calendar.get(Calendar.MONTH);
-//								    int mDay = calendar.get(Calendar.DAY_OF_MONTH);
-//								 fileDes.setCreationDate(mDay+"."+mMonth+"."+mYear);
-//							 }
-//							 if (fileDes.getAuthor() == null || fileDes.getAuthor().length() ==0){
-//								 fileDes.setAuthor("Author: -");
-//							 }
-//							 if (fileDes.getPreview() == null || fileDes.getPreview().length() ==0){
-//								 StringBuilder lineBuffer = new StringBuilder();
-//								 for (int j=0; j<3; j++){
-//									 if (line!= null) {
-//										 lineBuffer.append(line);
-//									 }
-//									 line = br.readLine();
-//								 }
-//								 
-//								 fileDes.setPreview(lineBuffer.toString());
-//							 }
+							 if (fileDes.getPreview() == null || fileDes.getPreview().length()==0 || fileDes.getPreview().equals("no preview")){
+								 for (int j=0; j<3; j++){
+									 if (line!= null) {
+										 lineBuffer.append(line);
+									 }
+									 line = br.readLine();
+								 }
+								 fileDes.setPreview(lineBuffer.toString());
+							 }
 							 break;
+						 }else if (line== null){
+							 if (fileDes.getPreview() == null || fileDes.getPreview().length()==0 || fileDes.getPreview().equals("no preview")){
+								 for (int j=0; j<3; j++){
+									 if (line!= null) {
+										 lineBuffer.append(line);
+									 }
+									 line = br.readLine();
+								 }
+								 fileDes.setPreview(lineBuffer.toString());
+							 }
 						 }
 					 }
 					 br.close();

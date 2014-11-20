@@ -1,0 +1,29 @@
+Qustion:
+-------
+my project is (controller + views...)
+is it wrong to link 2 html pages, not through the servlet controller?
+
+<html>
+<a href="page2.html">page2</a>
+</html>
+
+
+
+----or---
+
+<html>
+<a href="Controller/gotoPage2">page2</a>
+</html>
+
+and then the server make the forward:
+
+if (path.equals("/gotoPage2")) { request.getRequestDispatcher("/views/page2.html").forward(request, response); }
+
+
+
+
+Answer:
+------
+The second one is more clean in terms of keeping your logic in one place instead of doing logic in your view, although performance wise and easyness the first one is faster.
+
+Pretty much up to you and what your needs/wants are
