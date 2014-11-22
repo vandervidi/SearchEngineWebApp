@@ -30,7 +30,6 @@ public class controller extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Name of the directory where uploaded files will be saved, relative to the
 	 * web application directory.
 	 */
 	// private static final String SAVE_DIR = "uploadFiles";

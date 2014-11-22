@@ -537,7 +537,7 @@ public class MysqlConnector {
 	    String str = "a,able,about,across,after,all,almost,also,am,among,an,and,any,are,as,at,be,because,been,but,by,can,cannot,could,dear,did,do,does,either,else,ever,every,for,from,get,got,had,has,have,he,her,hers,him,his,how,however,i,if,in,into,is,it,its,just,least,let,like,likely,may,me,might,most,must,my,neither,no,nor,not,of,off,often,on,only,or,other,our,own,rather,said,say,says,she,should,since,so,some,than,that,the,their,them,then,there,these,they,this,tis,to,too,twas,us,wants,was,we,were,what,when,where,which,while,who,whom,why,will,with,would,yet,you,your";
 		String stopList[] = str.split(",");
 		
-		searchQuery = searchQuery.toLowerCase();
+		//searchQuery = searchQuery.toLowerCase();
 		
 		for (String s : stopList){
 			String regex = "\\s*\\b"+s+"\\b\\s*";
@@ -547,12 +547,12 @@ public class MysqlConnector {
 		System.out.println(searchQuery);
 		
 		// Split by OR operator
-		List<String> splitByOR = new ArrayList<String>(Arrays.asList(searchQuery.split(" or ")));
+		List<String> splitByOR = new ArrayList<String>(Arrays.asList(searchQuery.split(" OR ")));
 
 		// Run on every element of splitByOR list and remove AND word
 		// and get array of words.
 		for (int i=0; i<splitByOR.size(); i++) {
-			String query = splitByOR.get(i).replace(" and ", " ");
+			String query = splitByOR.get(i).replace(" AND ", " ");
 			query = query.trim();
 			splitByOR.set(i, query);
 		}
@@ -574,7 +574,7 @@ public class MysqlConnector {
 			 * loop gorj
 			 */
 			// If words contains a substring "NOT"
-			if (words.contains("not")) {
+			if (words.contains("NOT")) {
 				// list - dog, big duck
 				// remove 'NOT' and split
 				// string(0) , string(1)
