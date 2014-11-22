@@ -1,10 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="windows-1255">
-<title>Insert title here</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../views/includes/css/style.css">
+<link rel="stylesheet" href="../views/includes/css/bootstrap.css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans'
+	rel='stylesheet' type='text/css'>
+<title>Admin login page</title>
 </head>
 <body>
-Admin login page
+<nav id="topNav"><ul class="nav nav-pills">
+<li role="presentation"><a id="adminConfiguration" href="../controller/adminLogin"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+ Configuration</a></li>
+ <li role="presentation"><a id="adminConfiguration" href="../controller/"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+ Search</a></li>
+</ul></nav>
+
+<section id="loginWrapper">
+	<form id="login" role="form" action="authentication" method="GET">
+	    <h1 id="mainTitle">Log In</h1>
+	    <fieldset id="inputs">
+	       Username: <input name="username" type="text" placeholder="Username" autofocus required>   
+	       Password: <input name="password" type="password" placeholder="Password" required>
+	    </fieldset>
+	    
+	    <fieldset id="actions">
+	        <button type="submit" class="btn btn-default">Log in</button>
+	        
+	    </fieldset>
+	</form>
+</section>
 </body>
 </html>

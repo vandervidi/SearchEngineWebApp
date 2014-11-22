@@ -20,6 +20,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import com.mysql.jdbc.PreparedStatement;
 import com.mysql.jdbc.Statement;
 
 @WebServlet("/controller/*")
@@ -140,12 +141,16 @@ public class controller extends HttpServlet {
 
 		if (str.equals("/upload")) {
 			request.getRequestDispatcher("/views/upload.jsp").forward(request, response);
-
 		} 
-		if (str.equals("/adminLogin")) {
+		
+		else if (str.equals("/adminLogin")) {
 			request.getRequestDispatcher("/views/adminLogin.html").forward(request, response);
-
 		}
+		
+		else if (str.equals("/adminMenu")) {
+			request.getRequestDispatcher("/views/administration.html").forward(request, response);
+		}
+		
 		else if (str.equals("/getFilesList")) {
 			ArrayList<FileSchema> fs = new ArrayList<FileSchema>();
 			try {
@@ -163,24 +168,44 @@ public class controller extends HttpServlet {
 			request.setAttribute("files", fs);
 			dispatcher = getServletContext().getRequestDispatcher("/views/listOfFiles.jsp");
 			dispatcher.forward(request, response);
-
 			
-		}  else if (str.equals("/search")) {
-
+		}else if (str.equals("/authentication")) {
+			// Get login fields from the login form page.
+			 System.out.println("login");
+				String username = request.getParameter("username");
+				String password = request.getParameter("password");
+				try {
+					ms.statement = ms.connection.createStatement();
+					String query = "SELECT username,password FROM accounts WHERE username='"+ username + "' AND password='"+ password +"'";
+					ResultSet rs = ms.statement.executeQuery(query);
+					if (!rs.isBeforeFirst() ) {  
+						//in case the login failes-> retry
+						dispatcher = getServletContext().getRequestDispatcher("/views/adminLogin.html");
+						dispatcher.forward(request, response); 
+						} 
+					else{
+						
+						//in case the login is successful -> go to administration page
+						dispatcher = getServletContext().getRequestDispatcher("/views/administration.html");
+						dispatcher.forward(request, response);
+					}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		else if (str.equals("/search")) {
 			String searchQuery = request.getParameter("searchQuery");
 			System.out.println(searchQuery);
 
 			try {
 				List<String> splitedQueryList = ms.analyzeQuery(searchQuery);
-
-				List<Integer> docNumbers_of_results = ms
-						.getDocNumResults(splitedQueryList);
-
+				List<Integer> docNumbers_of_results = ms.getDocNumResults(splitedQueryList);
 				Iterator<FileDescriptor> result = ms.create_fileDescriptors_list_by_docNumbers(docNumbers_of_results);
-
 				request.setAttribute("searchQuery", searchQuery);
 				request.setAttribute("result", result);
 				request.setAttribute("numberOfSearchResults",docNumbers_of_results.size());
+				
 				dispatcher = getServletContext().getRequestDispatcher("/views/searchResults.jsp");
 				dispatcher.forward(request, response);
 
@@ -188,6 +213,35 @@ public class controller extends HttpServlet {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		} else if (str.equals("/enableOrDisable")) {
+			String query;
+			String docNum= request.getParameter("docNum");
+			String action = request.getParameter("action");
+			System.out.println(action);
+			System.out.println(docNum);
+			try {
+				ms.statement = ms.connection.createStatement();
+
+				if (action.equals("enable")){
+					query = "UPDATE postingfile SET deleted='0' WHERE docNumber='"+docNum+"'";
+				}
+				else{
+					query = "UPDATE postingfile SET deleted='1' WHERE docNumber='"+docNum+"'";
+				}
+			
+				ms.statement.executeUpdate(query);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		    response.sendRedirect("http://localhost:8080/SearchEngineWebApp/controller/getFilesList");
+
+		} else if (str.equals("/displayResult")) {
+			String docNum= request.getParameter("docNum");
+			System.out.println(docNum);
+			
+		    response.sendRedirect("http://localhost:8080/SearchEngineWebApp/controller/getFilesList");
 
 		} 
 		

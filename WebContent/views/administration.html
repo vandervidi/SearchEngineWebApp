@@ -1,13 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="windows-1255">
+<meta charset="utf-8">
+<link rel="stylesheet" href="../views/includes/css/style.css">
+<link rel="stylesheet" href="../views/includes/css/bootstrap.css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans'
+	rel='stylesheet' type='text/css'>
 <title>Login</title>
 </head>
 <body>
+	<nav id="topNav">
+		<ul class="nav nav-pills">
+			<li role="presentation"><a id="adminConfiguration"
+				href="../controller/"><span class="glyphicon glyphicon-search"
+					aria-hidden="true"></span> Search</a></li>
+		</ul>
+	</nav>
 
-ADMIN LOGIN PAGE
-<p><a href="../controller/upload" id="upload">Upload images</a></p>
-<p><a href="getFilesList" id="getFilesList">Browse files</a></p>
+
+	<section id="loginWrapper">
+
+		<h1 id="mainTitle">Things you can do..</h1>
+		<br>
+		
+		<ul class="nav .nav-stacked" style="text-align: center;">
+			<li role="presentation" class="active"><a
+				href="../controller/upload" id="upload"><span
+					class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+					Upload documents or images</a></li>
+			<li role="presentation"><a href="getFilesList" id="getFilesList"><span
+					class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+					Browse indexed files</a></li>
+		</ul>
+
+	</section>
+
 </body>
 </html>
