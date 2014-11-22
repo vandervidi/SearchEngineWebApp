@@ -359,18 +359,18 @@ public class MysqlConnector {
 			// if there are rows that equals to a path that was deleted in the
 			// past.
 			if (equalNumRows != 0) {
-				int docNumber = rs.getInt("docNumber");
-
-				// Change deleted column to 0
-				int check = statement.executeUpdate("UPDATE postingFile "
-						+ "		SET deleted=0 " + "		WHERE docPath ='" + pathFix
-						+ "';");
-
-				statement.close();
-				System.out.println("\nThis file that was deleted before - has recovered completely. \n"+path);
-				
-				// insert to indexFile table
-				parseFile_and_add_to_index_file_table(type, path, docNumber, "");
+//				int docNumber = rs.getInt("docNumber");
+//
+//				// Change deleted column to 0
+//				int check = statement.executeUpdate("UPDATE postingFile "
+//						+ "		SET deleted=0 " + "		WHERE docPath ='" + pathFix
+//						+ "';");
+//
+//				statement.close();
+//				System.out.println("\nThis file that was deleted before - has recovered completely. \n"+path);
+//				
+//				// insert to indexFile table
+//				parseFile_and_add_to_index_file_table(type, path, docNumber, "");
 
 			//the path is exist and deleted==0
 			// check for changes on this file
@@ -650,7 +650,7 @@ public class MysqlConnector {
 		return documentNumbers;
 	}
 
-	public Iterator create_fileDescriptors_list_by_docNumbers(List<Integer> docNumbers_of_results) throws SQLException, IOException {
+	public List<FileDescriptor> create_fileDescriptors_list_by_docNumbers(List<Integer> docNumbers_of_results) throws SQLException, IOException {
 		List <FileDescriptor> fd = new ArrayList<FileDescriptor>();
 		for( int docNum : docNumbers_of_results ){
 			String selectSQL = "SELECT * FROM postingFile WHERE docNumber=? AND deleted=?";
@@ -764,7 +764,7 @@ public class MysqlConnector {
 				 fd.add(fileDes);
 			 }
 		}
-		return fd.iterator();
+		return fd;
 	}
 
 	public String readFileContent(String filePath) throws IOException {

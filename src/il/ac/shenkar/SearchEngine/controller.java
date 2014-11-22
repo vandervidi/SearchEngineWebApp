@@ -200,10 +200,10 @@ public class controller extends HttpServlet {
 			try {
 				List<String> splitedQueryList = ms.analyzeQuery(searchQuery);
 				List<Integer> docNumbers_of_results = ms.getDocNumResults(splitedQueryList);
-				Iterator<FileDescriptor> result = ms.create_fileDescriptors_list_by_docNumbers(docNumbers_of_results);
+				List<FileDescriptor> result = ms.create_fileDescriptors_list_by_docNumbers(docNumbers_of_results);
 				request.setAttribute("searchQuery", searchQuery);
-				request.setAttribute("result", result);
-				request.setAttribute("numberOfSearchResults",docNumbers_of_results.size());
+				request.setAttribute("result", result.iterator());
+				request.setAttribute("numberOfSearchResults", result.size());
 				
 				dispatcher = getServletContext().getRequestDispatcher("/views/searchResults.jsp");
 				dispatcher.forward(request, response);
