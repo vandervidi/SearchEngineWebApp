@@ -642,7 +642,7 @@ public class MysqlConnector {
 		statement = connection.createStatement();
 		String query = "SELECT docNumber  FROM indexFile "
 				+ "		WHERE word IN (" + words + ")" + "		GROUP BY docNumber"
-				+ "		HAVING COUNT(DISTINCT word) >= " + numberOfWords/2;
+				+ "		HAVING COUNT(DISTINCT word) > " + numberOfWords/1.5;
 		ResultSet rs = statement.executeQuery(query);
 		while (rs.next()) {
 			documentNumbers.add(rs.getInt("docNumber"));
